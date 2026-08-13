@@ -12,11 +12,53 @@ export const data = {
   customId: 'select_ticket_category',
 };
 
+// Dedykowane instrukcje dla poszczególnych kategorii
+const CATEGORY_CONFIGS = {
+  rekrutacja: {
+    title: '⚔️ | Zgłoszenie: Rekrutacja',
+    color: 0x3498db,
+    description: 
+      `> Dziękujemy za chęć dołączenia do klanu **SZAK**!\n\n` +
+      `🪖 | Podaj swój nick z gry oraz link do profilu (np. Wargaming/Steam)\n` +
+      `📝 | Podaj swój wiek oraz krótko opisz swoje doświadczenie w grze\n` +
+      `⏳ | Oczekuj na odpowiedź od Rekrutera lub Dowództwa`
+  },
+  pomoc: {
+    title: '❓ | Zgłoszenie: Pomoc / Pytanie',
+    color: 0x2ecc71,
+    description: 
+      `> Masz pytanie lub potrzebujesz wsparcia technicznego/organizacyjnego?\n\n` +
+      `💬 | Opisz szczegółowo, w czym możemy Ci pomóc\n` +
+      `🖼️ | Załącz zrzuty ekranu, jeśli sprawa dotyczy problemu technicznego\n` +
+      `⏳ | Oczekuj na odpowiedź od Administracji`
+  },
+  skarga: {
+    title: '⚠️ | Zgłoszenie: Skarga / Incydent',
+    color: 0xe74c3c,
+    description: 
+      `> Oficjalne zgłoszenie naruszenia regulaminu lub konfliktu.\n\n` +
+      `👤 | Podaj nick / ID osoby, której dotyczy zgłoszenie\n` +
+      `📂 | Przedstaw przebieg sytuacji oraz **koniecznie załącz dowody** (screeny/wideo)\n` +
+      `🔒 | Sprawa zostanie rozpatrzona poufnie przez Zarząd klanu`
+  },
+  default: {
+    title: '📌 | Zgłoszenie: Sprawa Ogólna',
+    color: 0x2b2d31,
+    description: 
+      `> Witaj w prywatnym kanale zgłoszeniowym klanu **SZAK**.\n\n` +
+      `📝 | Opisz dokładnie sprawę, z którą do nas przychodzisz\n` +
+      `📎 | Załącz wszelkie przydatne materiały lub informacje\n` +
+      `⏳ | Oczekuj na odpowiedź od członka zespołu`
+  }
+};
+
 export async function execute(interaction, client, args) {
   try {
-    const selectedCategory = interaction.values?.[0] || 'Ogólne';
+    const selectedValue = interaction.values?.[0]?.toLowerCase() || 'default';
     const guild = interaction.guild;
     const user = interaction.user;
+
+    const categoryConfig = CATEGORY_CONFIGS[selectedValue] || CATEGORY_CONFIGS.default;
 
     const channelName = `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
@@ -61,17 +103,9 @@ export async function execute(interaction, client, args) {
     });
 
     const embed = new EmbedBuilder()
-      .setColor(0x2b2d31)
-      .setTitle(`📌 Zgłoszenie: ${selectedCategory.toUpperCase()}`)
-      .setDescription(
-        `Witaj ${user}! Dziękujemy za kontakt z klanem **SZAK**.\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `📝 **Jak nam pomóc w szybszym rozpatrzeniu?**\n` +
-        `• Opisz szczegółowo swój problem lub cel zgłoszenia.\n` +
-        `• Jeśli sprawa tego wymaga, załącz zrzuty ekranu lub powiązane linki.\n` +
-        `• Dowództwo / Administracja odpowie w tym kanale tak szybko, jak to możliwe.\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
-      )
+      .setColor(categoryConfig.color)
+      .setTitle(categoryConfig.title)
+      .setDescription(categoryConfig.description)
       .setFooter({ text: 'SZAK System Zgłoszeń', iconURL: guild.iconURL() || undefined })
       .setTimestamp();
 
