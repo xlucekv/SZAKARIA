@@ -12,93 +12,92 @@ export const data = {
   customId: 'select_ticket_category',
 };
 
-// Konfiguracja kategorii ze zbalansowanym pogrubieniem słów
-const CATEGORY_CONFIGS = {
-  rekrutacja: {
-    title: '` 📝 ` | Rekrutacja do Klanu SZAK',
-    prefix: 'rekrutacja',
-    color: 0x8e44ad,
-    description: 
-      `> Witaj w podaniu do klanu **SZAK**. Odpowiedz na poniższe pytania:\n\n` +
-      `* ` + '` 🪖 `' + ` | Podaj swój **nick** z gry Minecraft.\n` +
-      `* ` + '` 🎂 `' + ` | Ile masz **lat** (wiek)?\n` +
-      `* ` + '` ⚔️ `' + ` | Jakie posiadasz **itemy**?\n` +
-      `* ` + '` 📸 `' + ` | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
-      `* ` + '` ⏱️ `' + ` | Jak długo grasz na wersji **1.16**\n` +
-      `* ` + '` 🏰 `' + ` | W jakich **klanach** grałeś wcześniej?\n` +
-      `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Rekrutera** lub **Lidera**.`
-  },
-  pytanie: {
-    title: '` ❓ ` | Pytanie i Pomoc',
-    prefix: 'pytanie',
-    color: 0x8e44ad,
-    description: 
-      `> Witaj w sekcji pytań klanu **SZAK**.\n\n` +
-      `* ` + '` 💬 `' + ` | Opisz dokładnie swoje **pytanie** lub problem.\n` +
-      `* ` + '` 🖼️ `' + ` | Jeśli to konieczne, załącz **zrzut ekranu**.\n` +
-      `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Administracji**.`
-  },
-  nieobecnosc: {
-    title: '` ⏰ ` | Zgłoszenie Nieobecności',
-    prefix: 'nieobecnosc',
-    color: 0x8e44ad,
-    description: 
-      `> Panel zgłaszania planowanej przerwy od gry w klanie **SZAK**.\n\n` +
-      `* ` + '` 📅 `' + ` | Podaj **datę** rozpoczęcia i końca nieobecności.\n` +
-      `* ` + '` 💬 `' + ` | Podaj krótki **powód** swojej przerwy.\n` +
-      `* ` + '` ⏳ `' + ` | Zgłoszenie zostanie odnotowane przez **Zarząd**.`
-  },
-  skarga: {
-    title: '` 🚨 ` | Skarga / Incydent',
-    prefix: 'skarga',
-    color: 0xe74c3c,
-    description: 
-      `> Witaj w panelu skarg klanu **SZAK**.\n\n` +
-      `* ` + '` 👤 `' + ` | Podaj **nick gracza**, którego dotyczy zgłoszenie.\n` +
-      `* ` + '` 📂 `' + ` | Koniecznie załącz **dowody** (screeny lub wideo).\n` +
-      `* ` + '` 🔒 `' + ` | Zgłoszenie rozpatrzy poufnie **Zarząd klanu**.`
-  },
-  wspolpraca: {
-    title: '` 🤝 ` | Współpraca / Sojusze',
-    prefix: 'wspolpraca',
-    color: 0x8e44ad,
-    description: 
-      `> Kontakt dla innych klanów, sojuszy i propozycji.\n\n` +
-      `* ` + '` 🏰 `' + ` | Podaj nazwę swojego **klanu** lub projektu.\n` +
-      `* ` + '` 📜 `' + ` | Przedstaw szczegóły i warunki **współpracy**.\n` +
-      `* ` + '` ⏳ `' + ` | Oczekuj na kontakt ze strony **Lidera**.`
-  },
-  zbiorki: {
-    title: '` 💎 ` | Zbiórki Klanowe',
-    prefix: 'zbiorki',
-    color: 0x8e44ad,
-    description: 
-      `> Sprawy związane z wkładem w klan i zbiórkami.\n\n` +
-      `* ` + '` 📦 `' + ` | Określ **przedmioty** lub wkład, który zgłaszasz.\n` +
-      `* ` + '` 🖼️ `' + ` | Załącz **screeny** potwierdzające wpłatę/przekazanie.\n` +
-      `* ` + '` ⏳ `' + ` | Oczekuj na weryfikację przez **Skarbnika**.`
-  },
-  inne: {
-    title: '` 🎫 ` | Inne / Tickets',
-    prefix: 'ticket',
-    color: 0x8e44ad,
-    description: 
-      `> Pozostałe kwestie niepasujące do powyższych kategorii.\n\n` +
-      `* ` + '` 📝 `' + ` | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
-      `* ` + '` 📎 `' + ` | Załącz przydatne **materiały** lub informacje.\n` +
-      `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **zespołu**.`
-  }
-};
-
 export async function execute(interaction, client, args) {
   try {
     const selectedValue = interaction.values?.[0]?.toLowerCase() || 'inne';
     const guild = interaction.guild;
     const user = interaction.user;
 
+    // Generowanie dynamicznych opisów z powitaniem @user wewnątrz embeda
+    const CATEGORY_CONFIGS = {
+      rekrutacja: {
+        title: '` 📝 ` | Rekrutacja do Klanu SZAK',
+        prefix: 'rekrutacja',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user} w podaniu do klanu **SZAK**. Odpowiedz na poniższe pytania:\n\n` +
+          `* ` + '` 🪖 `' + ` | Podaj swój **nick** z gry Minecraft.\n` +
+          `* ` + '` 🎂 `' + ` | Ile masz **lat** (wiek)?\n` +
+          `* ` + '` ⚔️ `' + ` | Jakie posiadasz **itemy**?\n` +
+          `* ` + '` 📸 `' + ` | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
+          `* ` + '` ⏱️ `' + ` | Jak długo grasz na wersji **1.16**\n` +
+          `* ` + '` 🏰 `' + ` | W jakich **klanach** grałeś wcześniej?\n` +
+          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Rekrutera** lub **Lidera**.`
+      },
+      pytanie: {
+        title: '` ❓ ` | Pytanie i Pomoc',
+        prefix: 'pytanie',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user} w sekcji pytań klanu **SZAK**.\n\n` +
+          `* ` + '` 💬 `' + ` | Opisz dokładnie swoje **pytanie** lub problem.\n` +
+          `* ` + '` 🖼️ `' + ` | Jeśli to konieczne, załącz **zrzut ekranu**.\n` +
+          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Administracji**.`
+      },
+      nieobecnosc: {
+        title: '` ⏰ ` | Zgłoszenie Nieobecności',
+        prefix: 'nieobecnosc',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user}! Zgłoś swoją planowaną przerwę od gry:\n\n` +
+          `* ` + '` 📅 `' + ` | Podaj **datę** rozpoczęcia i końca nieobecności.\n` +
+          `* ` + '` 💬 `' + ` | Podaj krótki **powód** swojej przerwy.\n` +
+          `* ` + '` ⏳ `' + ` | Zgłoszenie zostanie odnotowane przez **Zarząd**.`
+      },
+      skarga: {
+        title: '` 🚨 ` | Skarga / Incydent',
+        prefix: 'skarga',
+        color: 0xe74c3c,
+        description: 
+          `> Witaj ${user} w panelu skarg klanu **SZAK**.\n\n` +
+          `* ` + '` 👤 `' + ` | Podaj **nick gracza**, którego dotyczy zgłoszenie.\n` +
+          `* ` + '` 📂 `' + ` | Koniecznie załącz **dowody** (screeny lub wideo).\n` +
+          `* ` + '` 🔒 `' + ` | Zgłoszenie rozpatrzy poufnie **Zarząd klanu**.`
+      },
+      wspolpraca: {
+        title: '` 🤝 ` | Współpraca / Sojusze',
+        prefix: 'wspolpraca',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user}! Kontakt dla klanów i sojuszy:\n\n` +
+          `* ` + '` 🏰 `' + ` | Podaj nazwę swojego **klanu** lub projektu.\n` +
+          `* ` + '` 📜 `' + ` | Przedstaw szczegóły i warunki **współpracy**.\n` +
+          `* ` + '` ⏳ `' + ` | Oczekuj na kontakt ze strony **Lidera**.`
+      },
+      zbiorki: {
+        title: '` 💎 ` | Zbiórki Klanowe',
+        prefix: 'zbiorki',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user} w panelu zbiórek klanowych:\n\n` +
+          `* ` + '` 📦 `' + ` | Określ **przedmioty** lub wkład, który zgłaszasz.\n` +
+          `* ` + '` 🖼️ `' + ` | Załącz **screeny** potwierdzające wpłatę/przekazanie.\n` +
+          `* ` + '` ⏳ `' + ` | Oczekuj na weryfikację przez **Skarbnika**.`
+      },
+      inne: {
+        title: '` 🎫 ` | Inne / Tickets',
+        prefix: 'ticket',
+        color: 0x8e44ad,
+        description: 
+          `> Witaj ${user} w prywatnym kanale wsparcia **SZAK**:\n\n` +
+          `* ` + '` 📝 `' + ` | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
+          `* ` + '` 📎 `' + ` | Załącz przydatne **materiały** lub informacje.\n` +
+          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **zespołu**.`
+      }
+    };
+
     const categoryConfig = CATEGORY_CONFIGS[selectedValue] || CATEGORY_CONFIGS.inne;
     
-    // Dynamiczna nazwa kanału, np. rekrutacja-nick
     const cleanUsername = user.username.toLowerCase().replace(/[^a-z0-9]/g, '');
     const channelName = `${categoryConfig.prefix}-${cleanUsername}`;
 
@@ -159,9 +158,8 @@ export async function execute(interaction, client, args) {
         .setStyle(ButtonStyle.Danger)
     );
 
-    // Wiadomość wewnątrz kanału z oznaczeniem gracza
+    // Wysyłamy sam embed bez napisu "Witaj @user!" nad ramką
     await ticketChannel.send({
-      content: `Witaj ${user}!`,
       embeds: [embed],
       components: [closeButton]
     });
