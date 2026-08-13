@@ -19,9 +19,13 @@ const CATEGORY_CONFIGS = {
     prefix: 'rekrutacja',
     color: 0x8e44ad,
     description: 
-      `> Witaj w oficjalnym panelu rekrutacji klanu **SZAK**.\n\n` +
-      `* ` + '` 🪖 `' + ` | Podaj swój **nick** z gra Minecraft.\n` +
-      `* ` + '` 📝 `' + ` | Napisz swój **wiek**, doświadczenie oraz styl gry.\n` +
+      `> Witaj w podaniu do klanu **SZAK**. Odpowiedz na poniższe pytania:\n\n` +
+      `* ` + '` 🪖 `' + ` | Podaj swój **nick** z gry Minecraft.\n` +
+      `* ` + '` 🎂 `' + ` | Ile masz **lat** (wiek)?\n` +
+      `* ` + '` ⚔️ `' + ` | Jakie posiadasz **itemy**?\n` +
+      `* ` + '` 📸 `' + ` | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
+      `* ` + '` ⏱️ `' + ` | Jak długo grasz na wersji **1.16**\n` +
+      `* ` + '` 🏰 `' + ` | W jakich **klanach** grałeś wcześniej?\n` +
       `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Rekrutera** lub **Lidera**.`
   },
   pytanie: {
@@ -94,7 +98,7 @@ export async function execute(interaction, client, args) {
 
     const categoryConfig = CATEGORY_CONFIGS[selectedValue] || CATEGORY_CONFIGS.inne;
     
-    // Tworzenie dynamicznej nazwy kanału: np. rekrutacja-nick
+    // Dynamiczna nazwa kanału, np. rekrutacja-nick
     const cleanUsername = user.username.toLowerCase().replace(/[^a-z0-9]/g, '');
     const channelName = `${categoryConfig.prefix}-${cleanUsername}`;
 
@@ -155,8 +159,9 @@ export async function execute(interaction, client, args) {
         .setStyle(ButtonStyle.Danger)
     );
 
+    // Wiadomość wewnątrz kanału z oznaczeniem gracza
     await ticketChannel.send({
-      content: `${user}`,
+      content: `Witaj ${user}!`,
       embeds: [embed],
       components: [closeButton]
     });
