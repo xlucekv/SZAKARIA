@@ -12,25 +12,22 @@ export default {
   customId: 'select_ticket_category',
   async execute(interaction, config, client) {
     try {
-      const selectedCategory = interaction.values[0];
+      const selectedCategory = interaction.values?.[0] || 'Ogólne';
       const guild = interaction.guild;
       const user = interaction.user;
 
-      // Unikalna nazwa kanału
       const channelName = `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
-      // Sprawdzenie, czy użytkownik nie ma już otwartego ticketu o tej nazwie
       const existingChannel = guild.channels.cache.find(c => c.name === channelName);
       if (existingChannel) {
         return await interaction.reply({
           content: `❌ Posiadasz już otwarte zgłoszenie: ${existingChannel}`,
-          flags: [64] // Ephemeral
+          flags: [64]
         });
       }
 
       await interaction.deferReply({ flags: [64] });
 
-      // Stworzenie prywatnego kanału
       const ticketChannel = await guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,
@@ -61,9 +58,8 @@ export default {
         ],
       });
 
-      // Estetyczny Embed powitalny
       const embed = new EmbedBuilder()
-        .setColor(0x2b2d31) // Elegancki ciemny motyw
+        .setColor(0x2b2d31)
         .setTitle(`📌 Zgłoszenie: ${selectedCategory.toUpperCase()}`)
         .setDescription(
           `Witaj ${user}! Dziękujemy za kontakt z klanem **SZAK**.\n\n` +
@@ -74,10 +70,9 @@ export default {
           `• Dowództwo / Administracja odpowie w tym kanale tak szybko, jak to możliwe.\n` +
           `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
         )
-        .setFooter({ text: 'SZAK System Zgłoszeń', iconURL: guild.iconURL() })
+        .setFooter({ text: 'SZAK System Zgłoszeń', iconURL: guild.iconURL() || undefined })
         .setTimestamp();
 
-      // Przycisk zamykania ze znakiem dwukropka dla kompatybilności
       const closeButton = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('ticket_close_request:')
@@ -87,7 +82,7 @@ export default {
       );
 
       await ticketChannel.send({
-        content: `${user} | <@&RoleID_LUB_ADMINS>`, // Możesz zmienić na ping roli
+        content: `${user}`,
         embeds: [embed],
         components: [closeButton]
       });
@@ -98,10 +93,14 @@ export default {
 
     } catch (error) {
       logger.error('Błąd podczas tworzenia ticketu:', error);
-      if (!interaction.replied) {
+      if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.',
           flags: [64]
+        }).catch(() => {});
+      } else {
+        await interaction.editReply({
+          content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.'
         }).catch(() => {});
       }
     }
