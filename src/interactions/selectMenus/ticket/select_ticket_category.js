@@ -84,14 +84,14 @@ export async function execute(interaction, client, args) {
           `* \` ⏳ \` | Oczekuj na weryfikację przez **Administrację**.`
       },
       inne: {
-        title: '` 🎫 ` | Inne / Tickets',
+        title: '` 🎫 ` | Centrum Pomocy i Zgłoszeń',
         prefix: 'ticket',
         color: 0x8e44ad,
         description: 
-          `> Witaj ${user} w prywatnym kanale wsparcia **SZAK**:\n\n` +
-          `* \` 📝 \` | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
-          `* \` 📎 \` | Załącz przydatne **materiały** lub informacje.\n` +
-          `* \` ⏳ \` | Oczekuj na odpowiedź od **Administracji**.`
+          `> Witaj ${user} w panelu kontaktowym **SZAK**:\n\n` +
+          `* \` 📝 \` | Wybierz odpowiednią kategoryzację sprawy z menu poniżej.\n` +
+          `* \` 📎 \` | Podaj jak najwięcej szczegółów oraz przydatnych materiałów.\n` +
+          `* \` ⏳ \` | Twoje zgłoszenie zostanie odebrane bezpośrednio przez **Administrację**.`
       }
     };
 
