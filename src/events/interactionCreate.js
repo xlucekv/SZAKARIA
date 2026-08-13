@@ -307,6 +307,7 @@ export default {
             }
           }
         } else if (interaction.isButton()) {
+          // Obsługa przycisku zamykania ticketu
           if (interaction.customId.startsWith('ticket_close') || interaction.customId.startsWith('close_ticket')) {
             try {
               await interaction.reply({ content: '🔒 Zgłoszenie zostanie zamknięte za 3 sekundy...' });
