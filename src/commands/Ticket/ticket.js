@@ -42,7 +42,7 @@ export default {
                 .addRoleOption((option) =>
                     option
                         .setName("staff_role")
-                        .setDescription("Rola administracji/dowództwa z dostępem do ticketów.")
+                        .setDescription("Rola administracji z dostępem do ticketów.")
                         .setRequired(false)
                 )
                 .addIntegerOption((option) =>
@@ -79,7 +79,7 @@ export default {
             });
             return await replyUserError(interaction, { 
                 type: ErrorTypes.PERMISSION, 
-                message: 'Brak uprawnień! Wymagane uprawnienie: `Zarządzanie kanałami`.' 
+                message: '> `❌` | Brak uprawnień! Wymagane uprawnienie: `Zarządzanie kanałami`.' 
             });
         }
 
@@ -94,7 +94,7 @@ export default {
             if (existingConfig?.ticketPanelChannelId) {
                 return await replyUserError(interaction, { 
                     type: ErrorTypes.UNKNOWN, 
-                    message: `Na tym serwerze istnieje już aktywny system zgłoszeń (panel w <#${existingConfig.ticketPanelChannelId}>).\n\nUżyj \`/ticket dashboard\`, aby go edytować lub usunąć.` 
+                    message: `> \`❌\` | Na tym serwerze istnieje już aktywny system zgłoszeń (panel w <#${existingConfig.ticketPanelChannelId}>).\n\n> \`💡\` | Użyj \`/ticket dashboard\`, aby go edytować lub usunąć.` 
                 });
             }
 
@@ -104,16 +104,15 @@ export default {
             const maxTicketsPerUser = interaction.options.getInteger("max_tickets_per_user") || 3;
             const dmOnClose = interaction.options.getBoolean("dm_on_close") !== false;
 
-            // Bezpośrednie kody Unicode - Discord na 100% je odczyta bez błędów kodowania!
             const defaultDescription = 
                 'Witaj w centrum pomocy i rekrutacji **Klanu SZAK**.\n\n' +
-                '• \uD83D\uDDC2 Wybierz kategorię zgłoszenia z poniższego menu.\n' +
-                '• \uD83D\uDDD2 Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
-                '• \u23F3 Oczekuj na odpowiedź od Administracji.\n\n' +
+                '• Wybierz kategorię zgłoszenia z poniższego menu.\n' +
+                '• Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
+                '• Oczekuj na odpowiedź od **Administracji**.\n\n' +
                 '*Prosimy o cierpliwość i nieotwieranie wielu ticketów bez potrzeby.*';
 
             const setupEmbed = createEmbed({ 
-                title: "\uD83C\uDFAB Centrum Pomocy & Rekrutacji", 
+                title: "Centrum Pomocy & Rekrutacji", 
                 description: customMessage || defaultDescription,
                 color: '#ff9900'
             });
@@ -160,7 +159,7 @@ export default {
 
                     new StringSelectMenuOptionBuilder()
                         .setLabel('Inne / Tickets')
-                        .setValue('tickets')
+                        .setValue('inne')
                         .setDescription('Pozostałe kwestie niepasujące do powyższych kategorii.')
                         .setEmoji('🎫')
                 );
@@ -188,19 +187,14 @@ export default {
                     });
                 }
 
-                let successMessage = `Panel zgłoszeń został wysłany na kanał ${panelChannel}.\n\n`;
+                let successMessage = `> \`✅\` | Panel zgłoszeń został pomyślnie wysłany na kanał ${panelChannel}.\n\n`;
                 if (staffRole) {
-                    successMessage += `**Rola z dostępem:** <@&${staffRole.id}>\n`;
+                    successMessage += `> \`🛡️\` | **Rola z dostępem:** <@&${staffRole.id}>\n`;
                 }
-                successMessage += `**Limit ticketów na osobę:** ${maxTicketsPerUser}`;
+                successMessage += `> \`📌\` | **Limit ticketów na osobę:** ${maxTicketsPerUser}`;
 
                 await InteractionHelper.safeEditReply(interaction, {
-                    embeds: [
-                        successEmbed(
-                            "Panel Zgłoszeń Skonfigurowany",
-                            successMessage,
-                        ),
-                    ],
+                    content: successMessage
                 });
 
             } catch (error) {
@@ -212,7 +206,7 @@ export default {
                 
                 await replyUserError(interaction, { 
                     type: ErrorTypes.UNKNOWN, 
-                    message: 'Nie udało się wysłać panelu zgłoszeń. Sprawdź uprawnienia bota.' 
+                    message: '> `❌` | Nie udało się wysłać panelu zgłoszeń. Sprawdź uprawnienia bota.' 
                 }).catch(() => {});
             }
         }
