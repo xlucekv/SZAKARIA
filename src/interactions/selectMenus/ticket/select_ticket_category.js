@@ -31,7 +31,7 @@ export async function execute(interaction, client, args) {
           `* ` + '` 📸 `' + ` | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
           `* ` + '` ⏱️ `' + ` | Jak długo grasz na wersji **1.16**\n` +
           `* ` + '` 🏰 `' + ` | W jakich **klanach** grałeś wcześniej?\n` +
-          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Rekrutera** lub **Lidera**.`
+          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Administracji**.`
       },
       pytanie: {
         title: '` ❓ ` | Pytanie i Pomoc',
@@ -51,7 +51,7 @@ export async function execute(interaction, client, args) {
           `> Witaj ${user}! Zgłoś swoją planowaną przerwę od gry:\n\n` +
           `* ` + '` 📅 `' + ` | Podaj **datę** rozpoczęcia i końca nieobecności.\n` +
           `* ` + '` 💬 `' + ` | Podaj krótki **powód** swojej przerwy.\n` +
-          `* ` + '` ⏳ `' + ` | Zgłoszenie zostanie odnotowane przez **Zarząd**.`
+          `* ` + '` ⏳ `' + ` | Zgłoszenie zostanie odnotowane przez **Administrację**.`
       },
       skarga: {
         title: '` 🚨 ` | Skarga / Incydent',
@@ -61,7 +61,7 @@ export async function execute(interaction, client, args) {
           `> Witaj ${user} w panelu skarg klanu **SZAK**.\n\n` +
           `* ` + '` 👤 `' + ` | Podaj **nick gracza**, którego dotyczy zgłoszenie.\n` +
           `* ` + '` 📂 `' + ` | Koniecznie załącz **dowody** (screeny lub wideo).\n` +
-          `* ` + '` 🔒 `' + ` | Zgłoszenie rozpatrzy poufnie **Zarząd klanu**.`
+          `* ` + '` 🔒 `' + ` | Zgłoszenie rozpatrzy poufnie **Administracja**.`
       },
       wspolpraca: {
         title: '` 🤝 ` | Współpraca / Sojusze',
@@ -71,7 +71,7 @@ export async function execute(interaction, client, args) {
           `> Witaj ${user}! Kontakt dla klanów i sojuszy:\n\n` +
           `* ` + '` 🏰 `' + ` | Podaj nazwę swojego **klanu** lub projektu.\n` +
           `* ` + '` 📜 `' + ` | Przedstaw szczegóły i warunki **współpracy**.\n` +
-          `* ` + '` ⏳ `' + ` | Oczekuj na kontakt ze strony **Lidera**.`
+          `* ` + '` ⏳ `' + ` | Oczekuj na kontakt ze strony **Administracji**.`
       },
       zbiorki: {
         title: '` 💎 ` | Zbiórki Klanowe',
@@ -81,7 +81,7 @@ export async function execute(interaction, client, args) {
           `> Witaj ${user} w panelu zbiórek klanowych:\n\n` +
           `* ` + '` 📦 `' + ` | Określ **przedmioty** lub wkład, który zgłaszasz.\n` +
           `* ` + '` 🖼️ `' + ` | Załącz **screeny** potwierdzające wpłatę/przekazanie.\n` +
-          `* ` + '` ⏳ `' + ` | Oczekuj na weryfikację przez **Skarbnika**.`
+          `* ` + '` ⏳ `' + ` | Oczekuj na weryfikację przez **Administrację**.`
       },
       inne: {
         title: '` 🎫 ` | Inne / Tickets',
@@ -91,7 +91,7 @@ export async function execute(interaction, client, args) {
           `> Witaj ${user} w prywatnym kanale wsparcia **SZAK**:\n\n` +
           `* ` + '` 📝 `' + ` | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
           `* ` + '` 📎 `' + ` | Załącz przydatne **materiały** lub informacje.\n` +
-          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **zespołu**.`
+          `* ` + '` ⏳ `' + ` | Oczekuj na odpowiedź od **Administracji**.`
       }
     };
 
