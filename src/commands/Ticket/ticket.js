@@ -30,7 +30,7 @@ export default {
                     option
                         .setName("panel_channel")
                         .setDescription("Kanał, na którym zostanie wysłany panel.")
-                        .addChannelTypes(ChannelType.GuildType ? ChannelType.GuildText : 0)
+                        .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true)
                 )
                 .addStringOption((option) =>
@@ -104,19 +104,21 @@ export default {
             const maxTicketsPerUser = interaction.options.getInteger("max_tickets_per_user") || 3;
             const dmOnClose = interaction.options.getBoolean("dm_on_close") !== false;
 
-            // Czyste, czytelne formatowanie w klanowym stylu
+            // Idealny wygląd opisu wzorowany 1:1 na profesjonalnym układzie
             const defaultDescription = 
-                '📁 ┃ Wybierz kategorię zgłoszenia z poniższego menu.\n' +
-                '📝 ┃ Wypełnij zgłoszenie i opisz dokładnie swoją sprawę.\n' +
-                '⏳ ┃ Oczekuj na odpowiedź od Dowództwa lub Administracji Klanu.';
+                'Witaj w centrum pomocy i rekrutacji **Klanu SZAK**.\n\n' +
+                '• 📁 ┃ Wybierz kategorię zgłoszenia z poniższego menu.\n' +
+                '• 📝 ┃ Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
+                '• ⏳ ┃ Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
+                '*Prosimy o cierpliwość i nieotwieranie wielu ticketów bez potrzeby.*';
 
             const setupEmbed = createEmbed({ 
-                title: "🎫 ┃ CENTRUM POMOCY & REKRUTACJI — KLAN SZAK", 
+                title: "🎫 ┃ Centrum Pomocy & Rekrutacji", 
                 description: customMessage || defaultDescription,
-                color: '#ff9900'
+                color: '#ff9900' // Klanowy pomarańczowy akcent
             });
 
-            // Rozwijane menu z pełnymi opisami pod każdą opcją
+            // Rozwijane menu z polskimi nazwami i opisami pod spodem
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('select_ticket_category')
                 .setPlaceholder('👉 Wybierz kategorię zgłoszenia...')
@@ -128,37 +130,37 @@ export default {
                         .setEmoji('📝'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Pytania & Pomoc')
+                        .setLabel('Pytanie')
                         .setValue('pytanie')
                         .setDescription('Masz pytanie dotyczące klanu, gier lub serwera?')
                         .setEmoji('❓'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Zgłoś nieobecność')
+                        .setLabel('Nieobecność')
                         .setValue('nieobecnosc')
                         .setDescription('Zgłoś planowaną dłuższą przerwę od gry.')
                         .setEmoji('⏰'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Skargi & Incydenty')
+                        .setLabel('Skarga')
                         .setValue('skarga')
                         .setDescription('Zgłoś naruszenie regulaminu lub niewłaściwe zachowanie.')
                         .setEmoji('🚨'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Współpraca & Dyplomacja')
+                        .setLabel('Współpraca')
                         .setValue('wspolpraca')
                         .setDescription('Kontakt dla innych klanów, sojuszy i propozycji.')
                         .setEmoji('🤝'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Zbiórki & Finanse')
+                        .setLabel('Zbiórki')
                         .setValue('zbiorki')
                         .setDescription('Sprawy związane z wkładem w klan i zbiórkami.')
                         .setEmoji('💎'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Inne Sprawy')
+                        .setLabel('Inne / Tickets')
                         .setValue('tickets')
                         .setDescription('Pozostałe kwestie niepasujące do powyższych kategorii.')
                         .setEmoji('🎫')
