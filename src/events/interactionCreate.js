@@ -307,10 +307,9 @@ export default {
             }
           }
         } else if (interaction.isButton()) {
-          // Obsługa przycisku zamykania ticketu
           if (interaction.customId.startsWith('ticket_close') || interaction.customId.startsWith('close_ticket')) {
             try {
-              await interaction.reply({ content: '🔒 Zgłoszenie zostanie zamknięte za 3 sekundy...' });
+              await interaction.reply({ content: 'Zgloszenie zostanie zamkniete za 3 sekundy...' });
               setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
               return;
             } catch (err) {
