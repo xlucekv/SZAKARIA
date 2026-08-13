@@ -89,9 +89,9 @@ export async function execute(interaction, client, args) {
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w panelu kontaktowym **SZAK**:\n\n` +
-          `* \` 📝 \` | Wybierz odpowiednią kategoryzację sprawy z menu poniżej.\n` +
-          `* \` 📎 \` | Podaj jak najwięcej szczegółów oraz przydatnych materiałów.\n` +
-          `* \` ⏳ \` | Twoje zgłoszenie zostanie odebrane bezpośrednio przez **Administrację**.`
+          `* \` 📝 \` | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
+          `* \` 📎 \` | Załącz przydatne **materiały** lub informacje.\n` +
+          `* \` ⏳ \` | Oczekuj na odpowiedź od **Administracji**.`
       }
     };
 
@@ -103,7 +103,7 @@ export async function execute(interaction, client, args) {
     const existingChannel = guild.channels.cache.find(c => c.name === channelName);
     if (existingChannel) {
       return await interaction.reply({
-        content: `❌ Posiadasz już otwarte zgłoszenie w tej kategorii: ${existingChannel}`,
+        content: `> \`❌\` | Posiadasz już otwarte zgłoszenie w tej kategorii: ${existingChannel}`,
         flags: [64]
       });
     }
@@ -163,19 +163,19 @@ export async function execute(interaction, client, args) {
     });
 
     await interaction.editReply({
-      content: `✅ Pomyślnie utworzono Twoje zgłoszenie: ${ticketChannel}`
+      content: `> \`✅\` | Pomyślnie utworzono Twoje zgłoszenie: ${ticketChannel}`
     });
 
   } catch (error) {
     logger.error('Błąd podczas tworzenia ticketu:', error);
     if (!interaction.replied && !interaction.deferred) {
       await interaction.reply({
-        content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.',
+        content: '> `❌` | Wystąpił błąd podczas tworzenia kanału zgłoszenia.',
         flags: [64]
       }).catch(() => {});
     } else {
       await interaction.editReply({
-        content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.'
+        content: '> `❌` | Wystąpił błąd podczas tworzenia kanału zgłoszenia.'
       }).catch(() => {});
     }
   }
