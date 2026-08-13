@@ -37,63 +37,63 @@ client.once('ready', () => {
     console.log(`🐺 Bot ${client.user.tag} jest gotowy!`);
 });
 
-client.on('interactionCreate', async interaction => {
-    // Komenda wysyłająca panel
-    if (interaction.isChatInputCommand()) {
-        if (interaction.commandName === 'setup-tickets') {
-            
-            const embed = new EmbedBuilder()
-                .setColor('#ff9900')
-                .setTitle('🐺 CENTRUM REKRUTACJI & POMOCY | Klan SZAK ⚔️')
-                .setDescription(
-                    '• `📝` ┃ Wybierz z poniższego menu **kategorię**, która Cię interesuje.\n' +
-                    '• `🎯` ┃ Zostanie utworzony prywatny kanał do rozmowy z administracją.\n\n' +
-                    '• `📜` ┃ **Przed otwarciem:** przygotuj się na ewentualne pytania!'
-                );
+// Reagowanie na zwykłą wiadomość !setup-tickets
+client.on('messageCreate', async message => {
+    if (message.author.bot) return;
 
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId('select_ticket_category')
-                .setPlaceholder('👉 Wybierz kategorię zgłoszenia...')
-                .addOptions(
-                    new StringSelectMenuOptionBuilder().setLabel('Rekrutacja').setValue('rekrutacja').setEmoji('📝'),
-                    new StringSelectMenuOptionBuilder().setLabel('Pytanie').setValue('pytanie').setEmoji('❓'),
-                    new StringSelectMenuOptionBuilder().setLabel('Nieobecność').setValue('nieobecnosc').setEmoji('⏰'),
-                    new StringSelectMenuOptionBuilder().setLabel('Skarga').setValue('skarga').setEmoji('🚨'),
-                    new StringSelectMenuOptionBuilder().setLabel('Współpraca').setValue('wspolpraca').setEmoji('🤝'),
-                    new StringSelectMenuOptionBuilder().setLabel('Zbiórki').setValue('zbiorki').setEmoji('💎'),
-                    new StringSelectMenuOptionBuilder().setLabel('Inne / Tickets').setValue('tickets').setEmoji('🎫')
-                );
+    if (message.content === '!setup-tickets') {
+        const embed = new EmbedBuilder()
+            .setColor('#ff9900')
+            .setTitle('🐺 CENTRUM REKRUTACJI & POMOCY | Klan SZAK ⚔️')
+            .setDescription(
+                '• `📝` ┃ Wybierz z poniższego menu **kategorię**, która Cię interesuje.\n' +
+                '• `🎯` ┃ Zostanie utworzony prywatny kanał do rozmowy z administracją.\n\n' +
+                '• `📜` ┃ **Przed otwarciem:** przygotuj się na ewentualne pytania!'
+            );
 
-            const row = new ActionRowBuilder().addComponents(selectMenu);
+        const selectMenu = new StringSelectMenuBuilder()
+            .setCustomId('select_ticket_category')
+            .setPlaceholder('👉 Wybierz kategorię zgłoszenia...')
+            .addOptions(
+                new StringSelectMenuOptionBuilder().setLabel('Rekrutacja').setValue('rekrutacja').setEmoji('📝'),
+                new StringSelectMenuOptionBuilder().setLabel('Pytanie').setValue('pytanie').setEmoji('❓'),
+                new StringSelectMenuOptionBuilder().setLabel('Nieobecność').setValue('nieobecnosc').setEmoji('⏰'),
+                new StringSelectMenuOptionBuilder().setLabel('Skarga').setValue('skarga').setEmoji('🚨'),
+                new StringSelectMenuOptionBuilder().setLabel('Współpraca').setValue('wspolpraca').setEmoji('🤝'),
+                new StringSelectMenuOptionBuilder().setLabel('Zbiórki').setValue('zbiorki').setEmoji('💎'),
+                new StringSelectMenuOptionBuilder().setLabel('Inne / Tickets').setValue('tickets').setEmoji('🎫')
+            );
 
-            await interaction.channel.send({ embeds: [embed], components: [row] });
-            await interaction.reply({ content: '✅ Panel ticketów został wysłany!', ephemeral: true });
-        }
+        const row = new ActionRowBuilder().addComponents(selectMenu);
+
+        await message.channel.send({ embeds: [embed], components: [row] });
+        if (message.deletable) await message.delete();
     }
+});
 
-    // Obsługa wyboru z Menu Rozwijanego
+// Obsługa interakcji (Menu Rozwijane i Przyciski)
+client.on('interactionCreate', async interaction => {
     if (interaction.isStringSelectMenu() && interaction.customId === 'select_ticket_category') {
         const selectedKey = interaction.values[0];
         const categoryConfig = CATEGORIES[selectedKey];
 
         const channelName = `ticket-${interaction.user.username}`;
         
-        // Tworzenie kanału w wybranej kategorii
         const ticketChannel = await interaction.guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
             parent: categoryConfig.categoryId,
             permissionOverwrites: [
                 {
-                    id: interaction.guild.id, // Ukryty dla wszystkich
+                    id: interaction.guild.id,
                     deny: [PermissionFlagsBits.ViewChannel],
                 },
                 {
-                    id: interaction.user.id, // Widoczny dla tworzącego
+                    id: interaction.user.id,
                     allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
                 },
                 {
-                    id: STAFF_ROLE_ID, // Widoczny dla administracji
+                    id: STAFF_ROLE_ID,
                     allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
                 },
             ],
@@ -115,7 +115,6 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: `✅ Utworzono Twój ticket: ${ticketChannel}`, ephemeral: true });
     }
 
-    // Obsługa przycisku Zamknij Ticket
     if (interaction.isButton() && interaction.customId === 'close_ticket') {
         await interaction.reply('🔒 Ten ticket zostanie usunięty za 5 sekund...');
         setTimeout(() => interaction.channel.delete(), 5000);
