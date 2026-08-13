@@ -20,78 +20,78 @@ export async function execute(interaction, client, args) {
 
     const CATEGORY_CONFIGS = {
       rekrutacja: {
-        title: '` 📝 ` | Rekrutacja do Klanu SZAK',
+        title: 'Rekrutacja do Klanu SZAK',
         prefix: 'rekrutacja',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w podaniu do klanu **SZAK**. Odpowiedz na poniższe pytania:\n\n` +
-          `• Podaj swój **nick** z gry Minecraft.\n` +
-          `• Ile masz **lat** (wiek)?\n` +
-          `• Jakie posiadasz **itemy**?\n` +
-          `• Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
-          `• Jak długo grasz na wersji **1.16**\n` +
-          `• W jakich **klanach** grałeś wcześniej?\n` +
-          `• Oczekuj na odpowiedź od **Administracji**.`
+          `• | Podaj swój **nick** z gry Minecraft.\n` +
+          `• | Ile masz **lat** (wiek)?\n` +
+          `• | Jakie posiadasz **itemy**?\n` +
+          `• | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
+          `• | Jak długo grasz na wersji **1.16**\n` +
+          `• | W jakich **klanach** grałeś wcześniej?\n` +
+          `• | Oczekuj na odpowiedź od **Administracji**.`
       },
       pytanie: {
-        title: '` ❓ ` | Pytanie i Pomoc',
+        title: 'Pytanie i Pomoc',
         prefix: 'pytanie',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w sekcji pytań klanu **SZAK**.\n\n` +
-          `• Opisz dokładnie swoje **pytanie** lub problem.\n` +
-          `• Jeśli to konieczne, załącz **zrzut ekranu**.\n` +
-          `• Oczekuj na odpowiedź od **Administracji**.`
+          `• | Opisz dokładnie swoje **pytanie** lub problem.\n` +
+          `• | Jeśli to konieczne, załącz **zrzut ekranu**.\n` +
+          `• | Oczekuj na odpowiedź od **Administracji**.`
       },
       nieobecnosc: {
-        title: '` ⏰ ` | Zgłoszenie Nieobecności',
+        title: 'Zgłoszenie Nieobecności',
         prefix: 'nieobecnosc',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user}! Zgłoś swoją planowaną przerwę od gry:\n\n` +
-          `• Podaj **datę** rozpoczęcia i końca nieobecności.\n` +
-          `• Podaj krótki **powód** swojej przerwy.\n` +
-          `• Zgłoszenie zostanie odnotowane przez **Administrację**.`
+          `• | Podaj **datę** rozpoczęcia i końca nieobecności.\n` +
+          `• | Podaj krótki **powód** swojej przerwy.\n` +
+          `• | Zgłoszenie zostanie odnotowane przez **Administrację**.`
       },
       skarga: {
-        title: '` 🚨 ` | Skarga / Incydent',
+        title: 'Skarga / Incydent',
         prefix: 'skarga',
         color: 0xe74c3c,
         description: 
           `> Witaj ${user} w panelu skarg klanu **SZAK**.\n\n` +
-          `• Podaj **nick gracza**, którego dotyczy zgłoszenie.\n` +
-          `• Koniecznie załącz **dowody** (screeny lub wideo).\n` +
-          `• Zgłoszenie rozpatrzy poufnie **Administracja**.`
+          `• | Podaj **nick gracza**, którego dotyczy zgłoszenie.\n` +
+          `• | Koniecznie załącz **dowody** (screeny lub wideo).\n` +
+          `• | Zgłoszenie rozpatrzy poufnie **Administracja**.`
       },
       wspolpraca: {
-        title: '` 🤝 ` | Współpraca / Sojusze',
+        title: 'Współpraca / Sojusze',
         prefix: 'wspolpraca',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user}! Kontakt dla klanów i sojuszy:\n\n` +
-          `• Podaj nazwę swojego **klanu** lub projektu.\n` +
-          `• Przedstaw szczegóły i warunki **współpracy**.\n` +
-          `• Oczekuj na kontakt ze strony **Administracji**.`
+          `• | Podaj nazwę swojego **klanu** lub projektu.\n` +
+          `• | Przedstaw szczegóły i warunki **współpracy**.\n` +
+          `• | Oczekuj na kontakt ze strony **Administracji**.`
       },
       zbiorki: {
-        title: '` 💎 ` | Zbiórki Klanowe',
+        title: 'Zbiórki Klanowe',
         prefix: 'zbiorki',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w panelu zbiórek klanowych:\n\n` +
-          `• Określ **przedmioty** lub wkład, który zgłaszasz.\n` +
-          `• Załącz **screeny** potwierdzające wpłatę/przekazanie.\n` +
-          `• Oczekuj na weryfikację przez **Administrację**.`
+          `• | Określ **przedmioty** lub wkład, który zgłaszasz.\n` +
+          `• | Załącz **screeny** potwierdzające wpłatę/przekazanie.\n` +
+          `• | Oczekuj na weryfikację przez **Administrację**.`
       },
       inne: {
-        title: '` 🎫 ` | Centrum Pomocy i Zgłoszeń',
+        title: 'Centrum Pomocy i Zgłoszeń',
         prefix: 'ticket',
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w panelu kontaktowym **SZAK**:\n\n` +
-          `• Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
-          `• Załącz przydatne **materiały** lub informacje.\n` +
-          `• Oczekuj na odpowiedź od **Administracji**.`
+          `• | Opisz szczegółowo **sprawę**, z którą przychodzisz.\n` +
+          `• | Załącz przydatne **materiały** lub informacje.\n` +
+          `• | Oczekuj na odpowiedź od **Administracji**.`
       }
     };
 
