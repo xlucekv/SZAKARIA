@@ -2,12 +2,12 @@ import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { getLeaderboard, getLevelingConfig, getXpForLevel } from '../../services/leveling/leveling.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('leaderboard')
-    .setDescription("Shows the server's level leaderboard")
+    .setDescription('Wyświetla ranking poziomów na serwerze')
     .setDMPermission(false),
   category: 'Leveling',
 
@@ -21,7 +21,7 @@ export default {
         embeds: [
           new EmbedBuilder()
             .setColor('#f1c40f')
-            .setDescription('The leveling system is currently disabled on this server.')
+            .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
         ],
         flags: MessageFlags.Ephemeral
       });
@@ -32,16 +32,16 @@ export default {
 
     if (leaderboard.length === 0) {
       throw new TitanBotError(
-        'No leaderboard data found',
+        'Nie znaleziono danych rankingu',
         ErrorTypes.DATABASE,
-        'No level data found yet. Start chatting to gain XP!'
+        'Brak danych o poziomach. Zacznij pisać na czacie, aby zdobywać XP!'
       );
     }
 
     const embed = new EmbedBuilder()
-      .setTitle('Level Leaderboard')
+      .setTitle('Ranking Poziomów')
       .setColor('#2ecc71')
-      .setDescription("Top 10 most active members in this server:")
+      .setDescription('Top 10 najbardziej aktywnych członków na tym serwerze:')
       .setTimestamp();
 
     const leaderboardText = await Promise.all(
@@ -57,19 +57,19 @@ export default {
           else if (index === 2) rankPrefix = '🥉';
           else rankPrefix = `**${index + 1}.**`;
 
-          return `${rankPrefix} ${userMention} - Level ${user.level} (${user.xp}/${xpForNextLevel} XP)`;
+          return `${rankPrefix} ${userMention} — Poziom ${user.level} (${user.xp}/${xpForNextLevel} XP)`;
         } catch {
-          return `**${index + 1}.** Error loading user ${user.userId}`;
+          return `**${index + 1}.** Błąd wczytywania użytkownika ${user.userId}`;
         }
       })
     );
 
     embed.addFields({
-      name: 'Rankings',
+      name: 'Klasyfikacja',
       value: leaderboardText.join('\n')
     });
 
     await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
-    logger.debug(`Leaderboard displayed for guild ${interaction.guildId}`);
+    logger.debug(`Wyświetlono ranking dla serwera ${interaction.guildId}`);
   }
 };
