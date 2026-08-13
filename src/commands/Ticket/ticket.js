@@ -104,16 +104,16 @@ export default {
             const maxTicketsPerUser = interaction.options.getInteger("max_tickets_per_user") || 3;
             const dmOnClose = interaction.options.getBoolean("dm_on_close") !== false;
 
-            // Opis z czystymi emotkami na początku wypunktowania
+            // Bezpośrednie kody Unicode - Discord na 100% je odczyta bez błędów kodowania!
             const defaultDescription = 
                 'Witaj w centrum pomocy i rekrutacji **Klanu SZAK**.\n\n' +
-                '• 📁 Wybierz kategorię zgłoszenia z poniższego menu.\n' +
-                '• 📝 Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
-                '• ⏳ Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
+                '• \uD83D\uDDC2 Wybierz kategorię zgłoszenia z poniższego menu.\n' +
+                '• \uD83D\uDDD2 Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
+                '• \u23F3 Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
                 '*Prosimy o cierpliwość i nieotwieranie wielu ticketów bez potrzeby.*';
 
             const setupEmbed = createEmbed({ 
-                title: "🎫 Centrum Pomocy & Rekrutacji", 
+                title: "\uD83C\uDFAB Centrum Pomocy & Rekrutacji", 
                 description: customMessage || defaultDescription,
                 color: '#ff9900'
             });
