@@ -6,15 +6,16 @@ import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { getTicketPermissionContext } from '../../utils/ticket/ticketPermissions.js';
 import { closeTicket } from '../../services/ticket.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("close")
-        .setDescription("Closes the current ticket.")
+        .setDescription("Zamyka aktualne zgłoszenie.")
         .setDMPermission(false)
         .addStringOption((option) =>
             option
                 .setName("reason")
-                .setDescription("The reason for closing the ticket.")
+                .setDescription("Powód zamknięcia zgłoszenia.")
                 .setRequired(false),
         ),
 
@@ -26,26 +27,27 @@ export default {
 
         const permissionContext = await getTicketPermissionContext({ client, interaction });
         if (!permissionContext.ticketData) {
-            return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'This command can only be used in a valid ticket channel.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.VALIDATION, 
+                message: '> `❌` | Ta komenda może być używana tylko na aktywnym kanale zgłoszenia.' 
+            });
         }
 
         if (!permissionContext.canCloseTicket) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission, the configured `Ticket Staff Role`, or be the ticket creator to close this ticket.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.PERMISSION, 
+                message: '> `❌` | Wymagasz uprawnienia `Zarządzanie kanałami`, roli **Administracji** lub bycia autorem zgłoszenia, aby je zamknąć.' 
+            });
         }
 
         const reason =
             interaction.options?.getString("reason") ||
-            "Closed via command without a specific reason.";
+            "Zamknięto przez komendę bez podania powodu.";
 
         await closeTicket(interaction.channel, interaction.user, reason);
 
         await InteractionHelper.safeEditReply(interaction, {
-            embeds: [
-                successEmbed(
-                    "Ticket Closed!",
-                    "This ticket has been closed successfully.",
-                ),
-            ],
+            content: `> \`🔒\` | Zgłoszenie zostało pomyślnie zamknięte.\n> \`📝\` | **Powód:** ${reason}`
         });
 
         logger.info('Ticket closed successfully', {
