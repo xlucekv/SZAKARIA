@@ -10,20 +10,20 @@ import { updateTicketPriority } from '../../services/ticket.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("priority")
-        .setDescription("Sets the priority level for the current support ticket.")
+        .setDescription("Ustawia poziom priorytetu dla aktualnego zgłoszenia.")
         .addStringOption((option) =>
             option
                 .setName("level")
-                .setDescription("The priority level for the ticket.")
+                .setDescription("Poziom priorytetu zgłoszenia.")
                 .setRequired(true)
                 .addChoices(
-                    { name: "Urgent", value: "urgent" },
-                    { name: "High", value: "high" },
-                    { name: "Medium", value: "medium" },
-                    { name: "Low", value: "low" },
-                    { name: "None", value: "none" },
+                    { name: "🔴 Pilny (Urgent)", value: "urgent" },
+                    { name: "🟠 Wysoki (High)", value: "high" },
+                    { name: "🟡 Średni (Medium)", value: "medium" },
+                    { name: "🟢 Niski (Low)", value: "low" },
+                    { name: "⚪ Brak (None)", value: "none" },
                 ),
-            )
+        )
         .setDMPermission(false),
     category: "Ticket",
 
@@ -35,23 +35,35 @@ export default {
 
         const permissionContext = await getTicketPermissionContext({ client, interaction });
         if (!permissionContext.ticketData) {
-            return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'This command can only be used in a valid ticket channel.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.VALIDATION, 
+                message: '> `❌` | Ta komenda może być używana tylko na aktywnym kanale zgłoszenia.' 
+            });
         }
 
         if (!permissionContext.canManageTicket) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission or the configured `Ticket Staff Role` to change ticket priority.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.PERMISSION, 
+                message: '> `❌` | Wymagasz uprawnienia `Zarządzanie kanałami` lub roli **Administracji**, aby zmienić priorytet zgłoszenia.' 
+            });
         }
 
         const priorityLevel = interaction.options.getString("level");
+        
+        const priorityLabels = {
+            urgent: '🔴 PILNY',
+            high: '🟠 WYSOKI',
+            medium: '🟡 ŚREDNI',
+            low: '🟢 NISKI',
+            none: '⚪ BRAK'
+        };
+
+        const displayPriority = priorityLabels[priorityLevel] || priorityLevel.toUpperCase();
+
         await updateTicketPriority(interaction.channel, priorityLevel, interaction.user);
 
         await InteractionHelper.safeEditReply(interaction, {
-            embeds: [
-                successEmbed(
-                    "Priority Updated",
-                    `Ticket priority set to **${priorityLevel.toUpperCase()}**.`,
-                ),
-            ],
+            content: `> \`🏷️\` | Priorytet zgłoszenia został zmieniony na: **${displayPriority}**.`
         });
 
         logger.info('Ticket priority updated successfully', {
