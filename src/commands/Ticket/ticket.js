@@ -109,7 +109,7 @@ export default {
                 'Witaj w centrum pomocy i rekrutacji **Klanu SZAK**.\n\n' +
                 '• \uD83D\uDDC2 Wybierz kategorię zgłoszenia z poniższego menu.\n' +
                 '• \uD83D\uDDD2 Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
-                '• \u23F3 Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
+                '• \u23F3 Oczekuj na odpowiedź od Administracji.\n\n' +
                 '*Prosimy o cierpliwość i nieotwieranie wielu ticketów bez potrzeby.*';
 
             const setupEmbed = createEmbed({ 
