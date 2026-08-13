@@ -20,35 +20,35 @@ import ticketConfig from './modules/ticket_dashboard.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("ticket")
-        .setDescription("Manages the server's ticket system.")
+        .setDescription("Zarządza klanowym systemem zgłoszeń.")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("setup")
-                .setDescription("Sets up the ticket creation panel in a specified channel.")
+                .setDescription("Tworzy klanowy panel zgłoszeń na wskazanym kanale.")
                 .addChannelOption((option) =>
                     option
                         .setName("panel_channel")
-                        .setDescription("The channel where the ticket panel will be sent.")
-                        .addChannelTypes(ChannelType.GuildText)
+                        .setDescription("Kanał, na którym zostanie wysłany panel.")
+                        .addChannelTypes(ChannelType.GuildType ? ChannelType.GuildText : 0)
                         .setRequired(true)
                 )
                 .addStringOption((option) =>
                     option
                         .setName("panel_message")
-                        .setDescription("The main message/description for the ticket panel.")
+                        .setDescription("Własna wiadomość/opis panelu (opcjonalnie).")
                         .setRequired(false)
                 )
                 .addRoleOption((option) =>
                     option
                         .setName("staff_role")
-                        .setDescription("The role that can access tickets (optional).")
+                        .setDescription("Rola administracji/dowództwa z dostępem do ticketów.")
                         .setRequired(false)
                 )
                 .addIntegerOption((option) =>
                     option
                         .setName("max_tickets_per_user")
-                        .setDescription("Maximum number of tickets a user can create (default: 3)")
+                        .setDescription("Maksymalna liczba otwartych ticketów na gracza (domyślnie: 3)")
                         .setMinValue(1)
                         .setMaxValue(10)
                         .setRequired(false)
@@ -56,14 +56,14 @@ export default {
                 .addBooleanOption((option) =>
                     option
                         .setName("dm_on_close")
-                        .setDescription("Send DM to user when their ticket is closed (default: true)")
+                        .setDescription("Czy wysyłać wiadomość PW po zamknięciu ticketu? (domyślnie: true)")
                         .setRequired(false)
                 )
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("dashboard")
-                .setDescription("Open the interactive ticket system dashboard")
+                .setDescription("Otwiera interaktywny panel zarządzania systemem ticketów")
         ),
     category: "ticket",
 
@@ -79,7 +79,7 @@ export default {
             });
             return await replyUserError(interaction, { 
                 type: ErrorTypes.PERMISSION, 
-                message: 'You need the `Manage Channels` permission for this action.' 
+                message: 'Brak uprawnień! Wymagane uprawnienie: `Zarządzanie kanałami`.' 
             });
         }
 
@@ -94,7 +94,7 @@ export default {
             if (existingConfig?.ticketPanelChannelId) {
                 return await replyUserError(interaction, { 
                     type: ErrorTypes.UNKNOWN, 
-                    message: `This server already has a ticket system set up (panel in <#${existingConfig.ticketPanelChannelId}>).\n\nOnly one ticket system is supported per server. Use \`/ticket dashboard\` to edit or update the existing setup, or select **Delete System** from the dashboard to remove it and start fresh.` 
+                    message: `Na tym serwerze istnieje już aktywny system zgłoszeń (panel w <#${existingConfig.ticketPanelChannelId}>).\n\nUżyj \`/ticket dashboard\`, aby go edytować lub usunąć.` 
                 });
             }
 
@@ -104,29 +104,64 @@ export default {
             const maxTicketsPerUser = interaction.options.getInteger("max_tickets_per_user") || 3;
             const dmOnClose = interaction.options.getBoolean("dm_on_close") !== false;
 
+            // Czyste, czytelne formatowanie w klanowym stylu
             const defaultDescription = 
-                '• `📝` ┃ Wybierz z poniższego menu **kategorię**, która Cię interesuje.\n' +
-                '• `🎯` ┃ Zostanie utworzony prywatny kanał do rozmowy z administracją.\n\n' +
-                '• `📜` ┃ **Przed otwarciem:** przygotuj się na ewentualne pytania!';
+                '📁 ┃ Wybierz kategorię zgłoszenia z poniższego menu.\n' +
+                '📝 ┃ Wypełnij zgłoszenie i opisz dokładnie swoją sprawę.\n' +
+                '⏳ ┃ Oczekuj na odpowiedź od Dowództwa lub Administracji Klanu.';
 
             const setupEmbed = createEmbed({ 
-                title: "🐺 CENTRUM REKRUTACJI & POMOCY | Klan SZAK ⚔️", 
+                title: "🎫 ┃ CENTRUM POMOCY & REKRUTACJI — KLAN SZAK", 
                 description: customMessage || defaultDescription,
                 color: '#ff9900'
             });
 
-            // Tworzenie menu wyboru z Waszymi 7 kategoriami
+            // Rozwijane menu z pełnymi opisami pod każdą opcją
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('select_ticket_category')
                 .setPlaceholder('👉 Wybierz kategorię zgłoszenia...')
                 .addOptions(
-                    new StringSelectMenuOptionBuilder().setLabel('Rekrutacja').setValue('rekrutacja').setEmoji('📝'),
-                    new StringSelectMenuOptionBuilder().setLabel('Pytanie').setValue('pytanie').setEmoji('❓'),
-                    new StringSelectMenuOptionBuilder().setLabel('Nieobecność').setValue('nieobecnosc').setEmoji('⏰'),
-                    new StringSelectMenuOptionBuilder().setLabel('Skarga').setValue('skarga').setEmoji('🚨'),
-                    new StringSelectMenuOptionBuilder().setLabel('Współpraca').setValue('wspolpraca').setEmoji('🤝'),
-                    new StringSelectMenuOptionBuilder().setLabel('Zbiórki').setValue('zbiorki').setEmoji('💎'),
-                    new StringSelectMenuOptionBuilder().setLabel('Inne / Tickets').setValue('tickets').setEmoji('🎫')
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Rekrutacja')
+                        .setValue('rekrutacja')
+                        .setDescription('Złóż podanie i dołącz w szeregi klanu SZAK.')
+                        .setEmoji('📝'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Pytania & Pomoc')
+                        .setValue('pytanie')
+                        .setDescription('Masz pytanie dotyczące klanu, gier lub serwera?')
+                        .setEmoji('❓'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Zgłoś nieobecność')
+                        .setValue('nieobecnosc')
+                        .setDescription('Zgłoś planowaną dłuższą przerwę od gry.')
+                        .setEmoji('⏰'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Skargi & Incydenty')
+                        .setValue('skarga')
+                        .setDescription('Zgłoś naruszenie regulaminu lub niewłaściwe zachowanie.')
+                        .setEmoji('🚨'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Współpraca & Dyplomacja')
+                        .setValue('wspolpraca')
+                        .setDescription('Kontakt dla innych klanów, sojuszy i propozycji.')
+                        .setEmoji('🤝'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Zbiórki & Finanse')
+                        .setValue('zbiorki')
+                        .setDescription('Sprawy związane z wkładem w klan i zbiórkami.')
+                        .setEmoji('💎'),
+
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Inne Sprawy')
+                        .setValue('tickets')
+                        .setDescription('Pozostałe kwestie niepasujące do powyższych kategorii.')
+                        .setEmoji('🎫')
                 );
 
             const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -149,25 +184,19 @@ export default {
                     logger.info('Ticket configuration saved', {
                         guildId: interaction.guildId,
                         staffRoleId: staffRole?.id,
-                        maxTickets: maxTicketsPerUser,
-                        dmOnClose: dmOnClose,
-                    });
-                } else {
-                    logger.error('Ticket setup: database unavailable, panel sent but configuration was NOT saved', {
-                        guildId: interaction.guildId,
                     });
                 }
 
-                let successMessage = `The ticket creation panel with categories has been sent to ${panelChannel}.\n\n`;
+                let successMessage = `Panel zgłoszeń został wysłany na kanał ${panelChannel}.\n\n`;
                 if (staffRole) {
-                    successMessage += `**${staffRole.name}** role will have access to tickets.\n`;
+                    successMessage += `**Rola z dostępem:** <@&${staffRole.id}>\n`;
                 }
-                successMessage += `**Max Tickets Per User:** ${maxTicketsPerUser}\n**DM on Close:** ${dmOnClose ? 'Enabled' : 'Disabled'}`;
+                successMessage += `**Limit ticketów na osobę:** ${maxTicketsPerUser}`;
 
                 await InteractionHelper.safeEditReply(interaction, {
                     embeds: [
                         successEmbed(
-                            "Ticket Panel Set Up",
+                            "Panel Zgłoszeń Skonfigurowany",
                             successMessage,
                         ),
                     ],
@@ -177,24 +206,13 @@ export default {
                 logger.error('Ticket setup error', {
                     error: error.message,
                     stack: error.stack,
-                    userId: interaction.user.id,
                     guildId: interaction.guildId,
-                    commandName: 'ticket_setup'
                 });
                 
-                if (interaction.deferred || interaction.replied) {
-                    await replyUserError(interaction, { 
-                        type: ErrorTypes.UNKNOWN, 
-                        message: 'Could not send the ticket panel or save configuration. Check bot permissions.' 
-                    }).catch(err => {
-                        logger.error('Failed to send error reply', { error: err.message });
-                    });
-                } else {
-                    await handleInteractionError(interaction, error, {
-                        commandName: 'ticket_setup',
-                        source: 'ticket_setup_command'
-                    });
-                }
+                await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: 'Nie udało się wysłać panelu zgłoszeń. Sprawdź uprawnienia bota.' 
+                }).catch(() => {});
             }
         }
     }
