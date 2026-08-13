@@ -20,17 +20,17 @@ const client = new Client({
 });
 
 // ID Twojej roli administracji
-const STAFF_ROLE_ID = 'TUTAJ_WKLIN_ID_ROLI_ADMINISTRACJI';
+const STAFF_ROLE_ID = '1259904096689979505';
 
-// MAPOWANIE KATEGORII (ID Twoich kategorii z Discorda)
+// MAPOWANIE KATEGORII
 const CATEGORIES = {
-    'rekrutacja': { name: 'Rekrutacja', categoryId: 'ID_KATEGORII_REKRUTACJA' },
-    'pytanie': { name: 'Pytanie', categoryId: 'ID_KATEGORII_PYTANIE' },
-    'nieobecnosc': { name: 'Nieobecność', categoryId: 'ID_KATEGORII_NIEOBECNOSC' },
-    'skarga': { name: 'Skarga', categoryId: 'ID_KATEGORII_SKARGA' },
-    'wspolpraca': { name: 'Współpraca', categoryId: 'ID_KATEGORII_WSPOLPRACA' },
-    'zbiorki': { name: 'Zbiórki', categoryId: 'ID_KATEGORII_ZBIORKI' },
-    'tickets': { name: 'Inne / Ogólne', categoryId: 'ID_KATEGORII_TICKETS' }
+    'rekrutacja': { name: 'Rekrutacja', categoryId: '1526235563110432809' },
+    'pytanie': { name: 'Pytanie', categoryId: '1526235669377191977' },
+    'nieobecnosc': { name: 'Nieobecność', categoryId: '1526235719260049470' },
+    'skarga': { name: 'Skarga', categoryId: '1526235791226044477' },
+    'wspolpraca': { name: 'Współpraca', categoryId: '1526235863019946094' },
+    'zbiorki': { name: 'Zbiórki', categoryId: '1530653502416883884' },
+    'tickets': { name: 'Tickets / Inne', categoryId: '1537429848912429148' }
 };
 
 client.once('ready', () => {
@@ -38,6 +38,7 @@ client.once('ready', () => {
 });
 
 client.on('interactionCreate', async interaction => {
+    // Komenda wysyłająca panel
     if (interaction.isChatInputCommand()) {
         if (interaction.commandName === 'setup-tickets') {
             
@@ -70,27 +71,29 @@ client.on('interactionCreate', async interaction => {
         }
     }
 
+    // Obsługa wyboru z Menu Rozwijanego
     if (interaction.isStringSelectMenu() && interaction.customId === 'select_ticket_category') {
         const selectedKey = interaction.values[0];
         const categoryConfig = CATEGORIES[selectedKey];
 
         const channelName = `ticket-${interaction.user.username}`;
         
+        // Tworzenie kanału w wybranej kategorii
         const ticketChannel = await interaction.guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
-            parent: categoryConfig.categoryId !== 'ID_KATEGORII_...' ? categoryConfig.categoryId : null,
+            parent: categoryConfig.categoryId,
             permissionOverwrites: [
                 {
-                    id: interaction.guild.id,
+                    id: interaction.guild.id, // Ukryty dla wszystkich
                     deny: [PermissionFlagsBits.ViewChannel],
                 },
                 {
-                    id: interaction.user.id,
+                    id: interaction.user.id, // Widoczny dla tworzącego
                     allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
                 },
                 {
-                    id: STAFF_ROLE_ID,
+                    id: STAFF_ROLE_ID, // Widoczny dla administracji
                     allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
                 },
             ],
@@ -104,7 +107,7 @@ client.on('interactionCreate', async interaction => {
         const row = new ActionRowBuilder().addComponents(closeButton);
 
         const welcomeEmbed = new EmbedBuilder()
-            .setColor('#2b2d31')
+            .setColor('#ff9900')
             .setTitle(`🎫 Kategoria: ${categoryConfig.name}`)
             .setDescription(`Witaj ${interaction.user}! Opisz tutaj swoją sprawę, a administracja odpowie najszybciej jak to możliwe.`);
 
@@ -112,6 +115,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: `✅ Utworzono Twój ticket: ${ticketChannel}`, ephemeral: true });
     }
 
+    // Obsługa przycisku Zamknij Ticket
     if (interaction.isButton() && interaction.customId === 'close_ticket') {
         await interaction.reply('🔒 Ten ticket zostanie usunięty za 5 sekund...');
         setTimeout(() => interaction.channel.delete(), 5000);
