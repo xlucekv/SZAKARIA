@@ -104,21 +104,20 @@ export default {
             const maxTicketsPerUser = interaction.options.getInteger("max_tickets_per_user") || 3;
             const dmOnClose = interaction.options.getBoolean("dm_on_close") !== false;
 
-            // Idealny wygląd opisu wzorowany 1:1 na profesjonalnym układzie
+            // Opis z czystymi emotkami na początku wypunktowania
             const defaultDescription = 
                 'Witaj w centrum pomocy i rekrutacji **Klanu SZAK**.\n\n' +
-                '• 📁 ┃ Wybierz kategorię zgłoszenia z poniższego menu.\n' +
-                '• 📝 ┃ Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
-                '• ⏳ ┃ Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
+                '• 📁 Wybierz kategorię zgłoszenia z poniższego menu.\n' +
+                '• 📝 Wypełnij formularz i opisz dokładnie swoją sprawę.\n' +
+                '• ⏳ Oczekuj na odpowiedź od Dowództwa lub Administracji.\n\n' +
                 '*Prosimy o cierpliwość i nieotwieranie wielu ticketów bez potrzeby.*';
 
             const setupEmbed = createEmbed({ 
-                title: "🎫 ┃ Centrum Pomocy & Rekrutacji", 
+                title: "🎫 Centrum Pomocy & Rekrutacji", 
                 description: customMessage || defaultDescription,
-                color: '#ff9900' // Klanowy pomarańczowy akcent
+                color: '#ff9900'
             });
 
-            // Rozwijane menu z polskimi nazwami i opisami pod spodem
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('select_ticket_category')
                 .setPlaceholder('👉 Wybierz kategorię zgłoszenia...')
