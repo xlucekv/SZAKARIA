@@ -361,7 +361,18 @@ export default {
           }
         } else if (interaction.isStringSelectMenu()) {
           const [customId, ...args] = interaction.customId.split(':');
-          const selectMenu = client.selectMenus.get(customId);
+
+          // Bezpośrednie obsłużenie menu wyboru kategorii ticketów
+          if (customId === 'select_ticket_category') {
+            try {
+              const ticketHandler = await import('../interactions/selectMenus/ticket/select_ticket_category.js');
+              return await ticketHandler.default.execute(interaction, botConfig, client);
+            } catch (err) {
+              logger.error('Error executing ticket select menu directly:', err);
+            }
+          }
+
+          const selectMenu = client.selectMenus?.get(customId);
 
           if (!selectMenu) {
             if (!interaction.customId.includes(':') || isCollectorManagedComponent(customId)) {
@@ -417,7 +428,6 @@ export default {
 
           if (!modal) {
             if (!interaction.customId.includes(':')) {
-
               return;
             }
 
