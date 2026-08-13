@@ -12,48 +12,43 @@ export const data = {
   customId: 'select_ticket_category',
 };
 
-// Dedykowane opisy Minecraft bez emotek z nagłówkami markdown
+// Konfiguracja idealnie odzwierciedlająca wygląd ze zdjęcia
 const CATEGORY_CONFIGS = {
   rekrutacja: {
-    title: 'ZGLOSZENIE: REKRUTACJA DO KLANU',
-    color: 0x3498db,
+    title: '` ⚔️ ` | Panel Rekrutacji Klanu SZAK',
+    color: 0x8e44ad, // Fioletowy/Purpurowy jak ze zdjęcia
     description: 
-      `# REKRUTACJA DO KLANU SZAK\n` +
-      `> Dziekujemy za chec dolaczenia do naszej ekipy Minecraft!\n\n` +
-      `* **NICK MINECRAFT:** Podaj swoj dokladny nick z gry.\n` +
-      `* **WIEK I DOSWIADCZENIE:** Podaj swoj wiek oraz jak dlugo grasz w MC.\n` +
-      `* **PVP / BUDOWANIE:** W czym czujesz sie najlepiej?\n` +
-      `* **OCZEKIWANIE:** Poczekaj na odpowiedz od Lidera lub Rekrutera.`
+      `> Witaj w oficjalnej rekrutacji klanu **SZAK**.\n\n` +
+      `* ` + '` 🪖 `' + ` | **Podaj swój nick z Minecrafta**\n` +
+      `* ` + '` 📝 `' + ` | **Wiek, doświadczenie oraz styl gry (PvP/Budowanie)**\n` +
+      `* ` + '` ⏳ `' + ` | **Oczekuj na odpowiedź od Rekrutera lub Lidera**`
   },
   pomoc: {
-    title: 'ZGLOSZENIE: POMOC / PYTANIE',
-    color: 0x2ecc71,
+    title: '` ❓ ` | Pomoc i Sprawy Techniczne',
+    color: 0x8e44ad,
     description: 
-      `# POMOC I SPRAWY TECHNICZNE\n` +
-      `> Masz pytanie dotyczace klanu, bazy lub serwera?\n\n` +
-      `* **OPIS PROBLEMU:** Napisz dokladnie, w czym mozemy Ci pomoc.\n` +
-      `* **ZALACZNIKI:** Jesli sprawa dotyczy bledu lub bazy, wrzuc zrzut ekranu.\n` +
-      `* **OCZEKIWANIE:** Administracja klanowa odpowie tak szybko, jak to mozliwe.`
+      `> Witaj w sekcji pomocy klanu **SZAK**.\n\n` +
+      `* ` + '` 💬 `' + ` | **Opisz dokładnie problem z serwerem/bazą**\n` +
+      `* ` + '` 🖼️ `' + ` | **Załącz zrzuty ekranu, jeśli to konieczne**\n` +
+      `* ` + '` ⏳ `' + ` | **Oczekuj na odpowiedź od Administracji**`
   },
   skarga: {
-    title: 'ZGLOSZENIE: SKARGA / ZLAMANIE REGULAMINU',
-    color: 0xe74c3c,
+    title: '` ⚠️ ` | Skarga / Incydent',
+    color: 0x8e44ad,
     description: 
-      `# SKARGA / INCYDENT W MINECRAFT\n` +
-      `> Zgloszenie naruszenia zasad klanu, kradziezy lub sojuszu.\n\n` +
-      `* **OBWINIONY GRACZ:** Podaj nick gracza.\n` +
-      `* **DOWODY (WYMAGANE):** Wklej link do nagrania lub screeny.\n` +
-      `* **POUFANOSC:** Zgloszenie widzi tylko Zarzad klanu SZAK.`
+      `> Witaj w oficjalnym panelu skarg klanu **SZAK**.\n\n` +
+      `* ` + '` 👤 `' + ` | **Podaj nick gracza, którego dotyczy zgłoszenie**\n` +
+      `* ` + '` 📂 `' + ` | **Koniecznie załącz dowody (screeny lub wideo)**\n` +
+      `* ` + '` 🔒 `' + ` | **Zgłoszenie rozpatrzy poufnie Zarząd klanu**`
   },
   default: {
-    title: 'ZGLOSZENIE: SPRAWA OGOLNA',
-    color: 0x2b2d31,
+    title: '` 📌 ` | Sprawa Ogólna',
+    color: 0x8e44ad,
     description: 
-      `# SPRAWA OGOLNA - KLAN SZAK\n` +
-      `> Witaj w prywatnym kanale zgloszeniowym.\n\n` +
-      `* **SZCZEGOLY:** Opisz sprawe, z ktora przychodzisz.\n` +
-      `* **INFORMACJE:** Podaj wszelkie przydatne szczegoly.\n` +
-      `* **OCZEKIWANIE:** Poczekaj na odpowiedz od czlonka Administracji.`
+      `> Witaj w prywatnym kanale wsparcia klanu **SZAK**.\n\n` +
+      `* ` + '` 📝 `' + ` | **Opisz szczegółowo sprawę, z którą przychodzisz**\n` +
+      `* ` + '` 📎 `' + ` | **Załącz przydatne materiały lub informacje**\n` +
+      `* ` + '` ⏳ `' + ` | **Oczekuj na odpowiedź od zespołu**`
   }
 };
 
@@ -64,13 +59,12 @@ export async function execute(interaction, client, args) {
     const user = interaction.user;
 
     const categoryConfig = CATEGORY_CONFIGS[selectedValue] || CATEGORY_CONFIGS.default;
-
     const channelName = `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
     const existingChannel = guild.channels.cache.find(c => c.name === channelName);
     if (existingChannel) {
       return await interaction.reply({
-        content: `Posiadasz juz otwarte zgloszenie: ${existingChannel}`,
+        content: `❌ Posiadasz już otwarte zgłoszenie: ${existingChannel}`,
         flags: [64]
       });
     }
@@ -111,13 +105,16 @@ export async function execute(interaction, client, args) {
       .setColor(categoryConfig.color)
       .setTitle(categoryConfig.title)
       .setDescription(categoryConfig.description)
-      .setFooter({ text: 'SZAK Minecraft Clan System', iconURL: guild.iconURL() || undefined })
+      .setFooter({ 
+        text: 'SZAK Tickets • Support System', 
+        iconURL: guild.iconURL() || undefined 
+      })
       .setTimestamp();
 
     const closeButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId('ticket_close_request:')
-        .setLabel('Zamknij zgloszenie')
+        .setLabel('Zamknij zgłoszenie')
         .setStyle(ButtonStyle.Danger)
     );
 
@@ -128,19 +125,19 @@ export async function execute(interaction, client, args) {
     });
 
     await interaction.editReply({
-      content: `Pomyslnie utworzono Twoje zgloszenie: ${ticketChannel}`
+      content: `✅ Pomyślnie utworzono Twoje zgłoszenie: ${ticketChannel}`
     });
 
   } catch (error) {
     logger.error('Błąd podczas tworzenia ticketu:', error);
     if (!interaction.replied && !interaction.deferred) {
       await interaction.reply({
-        content: 'Wystapil blad podczas tworzenia kanalu zgloszenia.',
+        content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.',
         flags: [64]
       }).catch(() => {});
     } else {
       await interaction.editReply({
-        content: 'Wystapil blad podczas tworzenia kanalu zgloszenia.'
+        content: '❌ Wystąpił błąd podczas tworzenia kanału zgłoszenia.'
       }).catch(() => {});
     }
   }
