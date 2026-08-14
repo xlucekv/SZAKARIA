@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } from 'discord.js';
-import { getColor } from '../../config/botConfig.js';
+import { getColor } from '../../../src/config/botConfig.js';
 import { createEmbed } from '../../utils/embeds.js';
 import { getLevelingConfig, saveLevelingConfig } from '../../services/leveling/leveling.js';
 import { botHasPermission } from '../../utils/permissionGuard.js';
