@@ -7,7 +7,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('verify')
-        .setDescription('Verify yourself and gain access to the server'),
+        .setDescription('Zweryfikuj się i uzyskaj dostęp do serwera'),
 
     async execute(interaction, config, client) {
         const guild = interaction.guild;
@@ -19,15 +19,15 @@ export default {
 
         if (result.status === 'already_verified') {
             return await InteractionHelper.safeReply(interaction, {
-                embeds: [infoEmbed('Already Verified', "You are already verified.")],
+                embeds: [infoEmbed('Już zweryfikowano', "Jesteś już zweryfikowany/a.")],
                 flags: MessageFlags.Ephemeral
             });
         }
 
         await InteractionHelper.safeReply(interaction, {
             embeds: [successEmbed(
-                "Verification Complete",
-                `You have been verified and given the **${result.roleName}** role! Welcome to the server! 🎉`
+                "Weryfikacja zakończona",
+                `Zostałeś/aś zweryfikowany/a i przyznano Ci rolę **${result.roleName}**! Witamy na serwerze! 🎉`
             )],
             flags: MessageFlags.Ephemeral
         });
