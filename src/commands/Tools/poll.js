@@ -96,10 +96,9 @@ export default {
             });
         }
 
-        // Tłumaczenie skrótów na pełny format
         const formatDuration = (input) => {
             const match = input.match(/^(\d+)([mhd])$/i);
-            if (!match) return input; // Jeśli wpisano coś innego, zwracamy oryginał
+            if (!match) return input;
 
             const value = parseInt(match[1], 10);
             const unit = match[2].toLowerCase();
@@ -127,9 +126,9 @@ export default {
 
         let pollMessage = `## 📊 **Klanowe Głosowanie**\n` +
                           `> \`💬\` **Pytanie:** ${question}\n` +
-                          `> \`⏳\` **Czas trwania:** ${durationFormatted}\n\n` +
-                          `${optionsFormatted}\n\n` +
-                          `> \`👤\` **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}`;
+                          `> \`⏳\` **Czas trwania:** ${durationFormatted}\n` +
+                          `> \`👤\` **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}\n\n` +
+                          `${optionsFormatted}`;
 
         const message = await interaction.channel.send({ content: pollMessage });
 
