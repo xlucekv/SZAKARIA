@@ -3,13 +3,14 @@ import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/
 import { logger } from '../../utils/logger.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('time')
-        .setDescription('Get the current time in different timezones')
+        .setDescription('Pobierz aktualny czas w różnych strefach czasowych')
         .addStringOption(option =>
             option.setName('timezone')
-                .setDescription('The timezone to display (e.g., UTC, America/New_York)')
+                .setDescription('Strefa czasowa do wyświetlenia (np. UTC, America/New_York, Europe/Warsaw)')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -20,7 +21,7 @@ export default {
 
                 let timeString;
                 try {
-                    timeString = new Date().toLocaleString('en-US', {
+                    timeString = new Date().toLocaleString('pl-PL', {
                         timeZone: timezone,
                         weekday: 'long',
                         year: 'numeric',
@@ -35,7 +36,7 @@ export default {
                     logger.warn(`Invalid timezone requested: ${timezone}`);
                     await replyUserError(interaction, {
                         type: ErrorTypes.VALIDATION,
-                        message: 'Invalid timezone. Please use a valid timezone identifier (e.g., UTC, America/New_York, Europe/London)',
+                        message: 'Nieprawidłowa strefa czasowa. Użyj poprawnego identyfikatora strefy czasowej (np. UTC, America/New_York, Europe/Warsaw)',
                     });
                     return;
                 }
@@ -44,15 +45,15 @@ export default {
                 const unixTimestamp = Math.floor(now.getTime() / 1000);
 
                 const embed = successEmbed(
-                    '🕒 Current Time',
+                    '🕒 Aktualny Czas',
                     `**${timezone}:** ${timeString}\n` +
-                    `**Unix Timestamp:** \`${unixTimestamp}\`\n` +
-                    `**ISO String:** \`${now.toISOString()}\``
+                    `**Znacznik czasu Unix:** \`${unixTimestamp}\`\n` +
+                    `**Ciąg ISO:** \`${now.toISOString()}\``
                 );
 
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             },
-            'Failed to get current time. Please try again.',
+            'Nie udało się pobrać aktualnego czasu. Spróbuj ponownie.',
             {
                 autoDefer: true,
                 deferOptions: { flags: MessageFlags.Ephemeral }
