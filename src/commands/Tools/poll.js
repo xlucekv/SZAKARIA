@@ -162,23 +162,28 @@ export default {
             content: '✅ Ankieta została pomyślnie utworzona!'
         });
 
+        // Pomocnicza funkcja do odmiany słowa "głos"
+        const getVotesWord = (count) => {
+            if (count === 1) return '1 głos';
+            if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return `${count} głosy`;
+            return `${count} głosów`;
+        };
+
         // Harmonogram zakończenia ankiety
         setTimeout(async () => {
             try {
                 const fetchedMsg = await message.channel.messages.fetch(message.id).catch(() => null);
                 if (!fetchedMsg) return;
 
-                // Pobieramy wyniki (liczba głosów dla każdej opcji, pomijając reakcję bota jeśli policzono by ją dodatkowo, ale .count - 1 jest standardem)
                 let resultsText = '';
                 let maxVotes = -1;
                 let winningOptionIndex = -1;
 
                 options.forEach((option, index) => {
                     const reaction = fetchedMsg.reactions.cache.get(EMOJIS[index]);
-                    // Odejmujemy 1, ponieważ bot sam dodał tę reakcję na start, chyba że użytkownicy też klikali
                     const votes = reaction ? Math.max(0, reaction.count - 1) : 0;
                     
-                    resultsText += `> \`${EMOJIS[index]}\` ${option} — **${votes}** głosów\n`;
+                    resultsText += `- \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**\n`;
 
                     if (votes > maxVotes) {
                         maxVotes = votes;
@@ -186,20 +191,17 @@ export default {
                     }
                 });
 
-                let closedContent = `## 📊 **Klanowe Głosowanie (Zakończone)**\n` +
-                                    `> \`💬\` **Pytanie:** ${question}\n` +
-                                    `> \`🏁\` **Status:** Zakończone\n\n` +
+                let closedContent = `## 📊 **Wyniki Głosowania**\n` +
+                                    `- 💬 **Pytanie:** ${question}\n` +
+                                    `- 🏁 **Status:** Zakończone\n\n` +
                                     `### Wyniki:\n${resultsText}\n`;
 
                 if (maxVotes > 0 && winningOptionIndex !== -1) {
-                    closedContent += `> \`🏆\` **Zwycięzca:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${maxVotes} głosów)\n\n`;
+                    closedContent += `- 🏆 **Najpopularniejsza opcja:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${getVotesWord(maxVotes)})\n`;
                 } else {
-                    closedContent += `> \`❌\` **Brak oddanych głosów w ankiecie.**\n\n`;
+                    closedContent += `- ❌ **Brak oddanych głosów w ankiecie.**\n`;
                 }
 
-                closedContent += `> \`ℹ️\` *Ta wiadomość zostanie automatycznie usunięta za 24 godziny.*`;
-
-                // Edytujemy wiadomość na podsumowanie
                 await fetchedMsg.edit({ content: closedContent });
                 await fetchedMsg.reactions.removeAll().catch(() => {});
 
