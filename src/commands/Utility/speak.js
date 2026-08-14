@@ -19,7 +19,7 @@ export default {
 
         if (!channel) {
             return await interaction.reply({
-                content: 'Musisz być na kanale głosowym, żebym mógł tam wejść!',
+                content: `> \`❌\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Musisz być na kanale głosowym, żebym mógł tam wejść!`,
                 ephemeral: true,
             });
         }
@@ -49,16 +49,19 @@ export default {
             });
 
             if (!resolve || !resolve.tracks || resolve.tracks.length === 0) {
-                return await interaction.editReply({ content: 'Nie udało się wygenerować strumienia audio.' });
+                return await interaction.editReply({ 
+                    content: `> \`⚠️\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Nie udało się wygenerować strumienia audio.` 
+                });
             }
 
             const track = resolve.tracks[0];
             player.queue.add(track);
             player.play();
 
-            await interaction.editReply({ content: `Powiedziałam: "${text}"` });
+            await interaction.editReply({ 
+                content: `> \`🎙️\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Powiedziałam: "${text}"` 
+            });
 
-            // Bezpiecznik z nieco dłuższym buforem (4 sekundy ekstra na spokojne wypowiedzenie całości + 2 sekundy ciszy)
             const estimatedDuration = (text.length * 150) + 3000 + 4000; 
 
             setTimeout(() => {
@@ -70,7 +73,9 @@ export default {
 
         } catch (error) {
             console.error('Błąd TTS:', error);
-            await interaction.editReply({ content: 'Wystąpił błąd podczas odtwarzania.' });
+            await interaction.editReply({ 
+                content: `> \`❌\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Wystąpił błąd podczas odtwarzania.` 
+            });
         }
     },
 };
