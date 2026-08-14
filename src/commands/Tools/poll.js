@@ -52,6 +52,10 @@ export default {
             option.setName('opcja10')
                 .setDescription('Dziesiąta opcja (opcjonalnie)')
                 .setRequired(false))
+        .addStringOption(option =>
+            option.setName('czas')
+                .setDescription('Czas trwania ankiety, np. 2h, 1d, 30m (opcjonalnie)')
+                .setRequired(false))
         .addBooleanOption(option =>
             option.setName('anonimowa')
                 .setDescription('Czy ankieta ma być anonimowa (domyślnie: fałsz)')
@@ -62,6 +66,7 @@ export default {
         if (!deferSuccess) return;
 
         const question = interaction.options.getString('pytanie');
+        const duration = interaction.options.getString('czas');
         const isAnonymous = interaction.options.getBoolean('anonimowa') || false;
 
         const options = [];
@@ -76,19 +81,21 @@ export default {
             });
         }
 
-        // Formatowanie opcji bez kresek cytatu, ładnie pod sobą
         const optionsFormatted = options.map((option, index) => `${EMOJIS[index]} **${option}**`).join('\n\n');
 
-        const pollMessage = `📊 **Klanowe Głosowanie**\n` +
-                            `💬 **Pytanie:** ${question}\n\n` +
-                            `${optionsFormatted}\n\n` +
-                            `━━━━━━━━━━━━━━━━━━━━\n` +
-                            `👤 **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}`;
+        let pollMessage = `📊 **Klanowe Głosowanie**\n` +
+                          `💬 **Pytanie:** ${question}\n`;
 
-        // Wysyłamy wiadomość bezpośrednio na kanał
+        if (duration) {
+            pollMessage += `⏳ **Czas trwania:** ${duration}\n`;
+        }
+
+        pollMessage += `\n${optionsFormatted}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `👤 **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}`;
+
         const message = await interaction.channel.send({ content: pollMessage });
 
-        // Dodajemy reakcje pod wiadomością
         for (let i = 0; i < options.length; i++) {
             await message.react(EMOJIS[i]);
             await new Promise(resolve => setTimeout(resolve, 300));
