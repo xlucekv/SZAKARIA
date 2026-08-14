@@ -8,32 +8,32 @@ import searchUrban from './modules/search_urban.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('search')
-        .setDescription('Search the web and dictionaries')
+        .setDescription('Przeszukuj sieć oraz słowniki')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('define')
-                .setDescription('Look up a word definition')
+                .setDescription('Wyszukaj definicję słowa')
                 .addStringOption(option =>
-                    option.setName('word')
-                        .setDescription('The word to look up')
+                    option.setName('slowo')
+                        .setDescription('Słowo do wyszukania')
                         .setRequired(true))
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('google')
-                .setDescription('Search Google')
+                .setDescription('Wyszukaj w Google')
                 .addStringOption(option =>
-                    option.setName('query')
-                        .setDescription('What would you like to search for?')
+                    option.setName('zapytanie')
+                        .setDescription('Co chcesz wyszukać?')
                         .setRequired(true))
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('urban')
-                .setDescription('Search Urban Dictionary for definitions')
+                .setDescription('Wyszukaj definicję w Urban Dictionary')
                 .addStringOption(option =>
-                    option.setName('term')
-                        .setDescription('The term to look up on Urban Dictionary')
+                    option.setName('haslo')
+                        .setDescription('Hasło do wyszukania w Urban Dictionary')
                         .setRequired(true))
         ),
 
@@ -48,7 +48,7 @@ export default {
             case 'urban':
                 return await searchUrban.execute(interaction, config, client);
             default:
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Unknown subcommand' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Nieznana podkomenda.' });
         }
     }
 };
