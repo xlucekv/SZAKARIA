@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { logger } from '../../utils/logger.js';
-import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
+import { TitanBotError, ErrorTypes, replyUserError } from '../../utils/errorHandler.js';
 import { checkUserPermissions } from '../../utils/permissionGuard.js';
 import { removeLevels, getUserLevelData, getLevelingConfig } from '../../services/leveling/leveling.js';
 import { createEmbed } from '../../utils/embeds.js';
@@ -9,7 +9,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
   data: new SlashCommandBuilder()
     .setName('levelremove')
-    .setDescription('Usuń poziomy użytkownikowi')
+    .setDescription('Usuń poziomy wybranemu użytkownikowi')
     .addUserOption((option) =>
       option
         .setName('user')
@@ -19,9 +19,10 @@ export default {
     .addIntegerOption((option) =>
       option
         .setName('levels')
-        .setDescription('Liczba poziomów do usunięcia')
+        .setDescription('Liczba poziomów do usunięcia (1-100)')
         .setRequired(true)
         .setMinValue(1)
+        .setMaxValue(100)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .setDMPermission(false),
@@ -33,25 +34,33 @@ export default {
     const hasPermission = await checkUserPermissions(
       interaction,
       PermissionFlagsBits.ManageGuild,
-      'Potrzebujesz uprawnienia Zarządzanie Serwerem, aby użyć tej komendy.'
+      'Potrzebujesz uprawnienia **Zarządzanie Serwerem**, aby użyć tej komendy.'
     );
     if (!hasPermission) return;
 
     const levelingConfig = await getLevelingConfig(client, interaction.guildId);
     if (!levelingConfig?.enabled) {
-      await InteractionHelper.safeEditReply(interaction, {
+      return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
-          new EmbedBuilder()
-            .setColor('#f1c40f')
-            .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
+          createEmbed({
+            title: 'System Poziomów',
+            description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
+            color: 'warning',
+          }),
         ],
-        flags: MessageFlags.Ephemeral
       });
-      return;
     }
 
     const targetUser = interaction.options.getUser('user');
     const levelsToRemove = interaction.options.getInteger('levels');
+
+    // Walidacja: Blokada usuwania poziomów botom
+    if (targetUser.bot) {
+      return await replyUserError(interaction, {
+        type: ErrorTypes.VALIDATION,
+        message: 'Nie można usuwać poziomów botom.',
+      });
+    }
 
     const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
     if (!member) {
@@ -63,12 +72,11 @@ export default {
     }
 
     const userData = await getUserLevelData(client, interaction.guildId, targetUser.id);
-    if (userData.level === 0) {
-      throw new TitanBotError(
-        `User ${targetUser.id} is already at minimum level`,
-        ErrorTypes.VALIDATION,
-        `${targetUser.tag} ma już poziom 0 i nie można mu usunąć więcej poziomów.`
-      );
+    if (!userData || userData.level === 0) {
+      return await replyUserError(interaction, {
+        type: ErrorTypes.VALIDATION,
+        message: `${targetUser} ma już poziom **0** i nie można mu usunąć więcej poziomów.`,
+      });
     }
 
     const updatedData = await removeLevels(client, interaction.guildId, targetUser.id, levelsToRemove);
@@ -77,14 +85,16 @@ export default {
       embeds: [
         createEmbed({
           title: 'Usunięto poziomy',
-          description: `Pomyślnie usunięto ${levelsToRemove} poziomów użytkownikowi ${targetUser.tag}.\n**Nowy poziom:** ${updatedData.level}`,
-          color: 'success'
-        })
-      ]
+          description:
+            `Pomyślnie usunięto **${levelsToRemove}** ${levelsToRemove === 1 ? 'poziom' : 'poziomów'} użytkownikowi ${targetUser}.\n\n` +
+            `**Nowy poziom:** ${updatedData.level}`,
+          color: 'success',
+        }),
+      ],
     });
 
     logger.info(
-      `[ADMIN] Użytkownik ${interaction.user.tag} usunął ${levelsToRemove} poziomów użytkownikowi ${targetUser.tag} na serwerze ${interaction.guildId}`
+      `[ADMIN] Użytkownik ${interaction.user.tag} (ID: ${interaction.user.id}) usunął ${levelsToRemove} lvl użytkownikowi ${targetUser.tag} (ID: ${targetUser.id}) na serwerze ${interaction.guildId}`
     );
-  }
+  },
 };
