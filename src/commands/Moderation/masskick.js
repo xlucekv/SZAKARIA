@@ -1,24 +1,24 @@
-import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
-import { createEmbed, successEmbed, warningEmbed } from '../../utils/embeds.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { successEmbed, warningEmbed } from '../../utils/embeds.js';
 import { logModerationAction } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { ModerationService } from '../../services/moderation/moderationService.js';
 import { TitanBotError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("masskick")
-        .setDescription("Kick multiple users from the server at once")
+        .setDescription("Wyrzuć wielu użytkowników z serwera jednocześnie")
         .addStringOption(option =>
             option
-                .setName("users")
-                .setDescription("User IDs or mentions to kick (separated by spaces or commas)")
+                .setName("uzytkownicy")
+                .setDescription("Identyfikatory ID lub wzmianki użytkowników (rozdzielone spacjami lub przecinkami)")
                 .setRequired(true)
         )
         .addStringOption(option =>
-            option.setName("reason")
-                .setDescription("Reason for the mass kick")
+            option.setName("powod")
+                .setDescription("Powód masowego wyrzucenia")
                 .setRequired(false)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
@@ -36,26 +36,35 @@ export default {
             return;
         }
 
-        const usersInput = interaction.options.getString("users");
-        const reason = interaction.options.getString("reason") || "Mass kick - No reason provided";
+        const usersInput = interaction.options.getString("uzytkownicy");
+        const reason = interaction.options.getString("powod") || "Masowe wyrzucenie - Brak podanego powodu";
 
         try {
             const userIds = usersInput
-.replace(/<@!?(\d+)>/g, '$1')
-.split(/[\s,]+/)
-.filter(id => id && /^\d+$/.test(id))
-.slice(0, 20);
+                .replace(/<@!?(\d+)>/g, '$1')
+                .split(/[\s,]+/)
+                .filter(id => id && /^\d+$/.test(id))
+                .slice(0, 20);
 
             if (userIds.length === 0) {
-                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide valid user IDs or mentions. Maximum 20 users at once.' });
+                return await replyUserError(interaction, { 
+                    type: ErrorTypes.VALIDATION, 
+                    message: 'Podaj prawidłowe ID użytkowników lub wzmianki. Maksymalnie 20 osób naraz.' 
+                });
             }
 
             if (userIds.includes(interaction.user.id)) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You cannot include yourself in a mass kick.' });
+                return await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: 'Nie możesz uwzględnić samego siebie w masowym wyrzuceniu.' 
+                });
             }
 
             if (userIds.includes(client.user.id)) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You cannot include the bot in a mass kick.' });
+                return await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: 'Nie możesz uwzględnić bota w masowym wyrzuceniu.' 
+                });
             }
 
             const results = {
@@ -69,7 +78,7 @@ export default {
                     const member = await interaction.guild.members.fetch(userId).catch(() => null);
                     
                     if (!member) {
-                        results.failed.push({ userId, reason: "User not in server" });
+                        results.failed.push({ userId, reason: "Użytkownik nie znajduje się na serwerze" });
                         continue;
                     }
 
@@ -97,7 +106,7 @@ export default {
                         results.skipped.push({
                             user: member.user.tag,
                             userId,
-                            reason: 'Target has Admin or a managed role, or bot lacks Kick Members',
+                            reason: 'Użytkownik ma uprawnienia Administratora, zarządzaną rolę lub bot nie posiada uprawnień do wyrzucania',
                         });
                         continue;
                     }
@@ -127,47 +136,47 @@ export default {
 
                 } catch (error) {
                     logger.error(`Failed to kick user ${userId}:`, error);
-                    const reason = error instanceof TitanBotError
+                    const failReason = error instanceof TitanBotError
                         ? (error.userMessage || error.message)
-                        : (error.message || "Unknown error");
+                        : (error.message || "Nieznany błąd");
                     results.failed.push({ 
                         userId, 
-                        reason,
+                        reason: failReason,
                     });
                 }
             }
 
-            let description = `**Mass Kick Results:**\n\n`;
+            let description = `> \`📝\` | **Powód:** ${reason}\n\n`;
             
             if (results.successful.length > 0) {
-                description += `✅ **Successfully Kicked (${results.successful.length}):**\n`;
+                description += `> \`✅\` | **Wyrzucono pomyślnie (${results.successful.length}):**\n`;
                 results.successful.forEach(result => {
-                    description += `• ${result.user} (${result.userId})\n`;
+                    description += `• ${result.user} (\`${result.userId}\`)\n`;
                 });
                 description += '\n';
             }
 
             if (results.skipped.length > 0) {
-                description += `⚠️ **Skipped (${results.skipped.length}):**\n`;
+                description += `> \`⚠️\` | **Pominięto (${results.skipped.length}):**\n`;
                 results.skipped.forEach(result => {
-                    description += `• ${result.user} - ${result.reason}\n`;
+                    description += `• ${result.user} — ${result.reason}\n`;
                 });
                 description += '\n';
             }
 
             if (results.failed.length > 0) {
-                description += `❌ **Failed (${results.failed.length}):**\n`;
+                description += `> \`❌\` | **Błędy (${results.failed.length}):**\n`;
                 results.failed.forEach(result => {
-                    description += `• ${result.userId} - ${result.reason}\n`;
+                    description += `• \`${result.userId}\` — ${result.reason}\n`;
                 });
             }
 
-            const embed = results.successful.length > 0 ? successEmbed : warningEmbed;
+            const embedBuilder = results.successful.length > 0 ? successEmbed : warningEmbed;
             
             return await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
-                    embed(
-                        `👢 Mass Kick Completed`,
+                    embedBuilder(
+                        "Masowe Wyrzucenie Zakończone",
                         description
                     )
                 ]
@@ -175,7 +184,10 @@ export default {
 
         } catch (error) {
             logger.error("Error in masskick command:", error);
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while processing the mass kick. Please try again later.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.UNKNOWN, 
+                message: 'Wystąpił błąd podczas wykonywania masowego wyrzucenia. Spróbuj ponownie później.' 
+            });
         }
     }
 };
