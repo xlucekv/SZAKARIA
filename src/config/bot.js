@@ -9,7 +9,7 @@ export const botConfig = {
     activities: [
       {
         name: "SZAK",
-        state: "Gra w klanie SZAK :muscle: ",
+        state: "Gra w klanie SZAK 💪🏼",
         type: 4, // 4 = Custom Status
       },
     ],
