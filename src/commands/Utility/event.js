@@ -38,6 +38,7 @@ export default {
 
         const buildContent = () => {
             let content = `## 📢 **Klanowe Wydarzenie**\n` +
+                          `> \`👤\` **Autor:** ${interaction.user} (\`${interaction.user.id}\`)\n` +
                           `> \`🎯\` **Nazwa:** ${title}\n` +
                           `> \`⏰\` **Termin:** ${time}\n`;
 
@@ -50,8 +51,7 @@ export default {
                 return Array.from(set).map(id => `<@${id}>`).join(', ');
             };
 
-            content += `\n> \`👤\` **Organizator:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n\n` +
-                       `### Uczestnicy:\n` +
+            content += `\n### Uczestnicy:\n` +
                        `- \`✅\` **Będę (${goingSet.size}):** ${getNames(goingSet)}\n` +
                        `- \`❌\` **Nie będę (${notGoingSet.size}):** ${getNames(notGoingSet)}\n` +
                        `- \`❓\` **Niezdecydowani (${maybeSet.size}):** ${getNames(maybeSet)}`;
