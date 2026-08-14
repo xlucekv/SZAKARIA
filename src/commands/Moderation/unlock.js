@@ -1,18 +1,17 @@
-import { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField, ChannelType } from 'discord.js';
-import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { successEmbed } from '../../utils/embeds.js';
 import { logEvent } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
-import { getColor } from '../../config/bot.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("unlock")
         .setDescription(
-            "Unlocks the current channel (allows @everyone to send messages again).",
+            "Odblokowuje obecny kanał (pozwala roli @everyone ponownie wysyłać wiadomości).",
         )
-.setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
     category: "moderation",
 
     async execute(interaction, config, client) {
@@ -37,7 +36,10 @@ export default {
                 currentPermissions.has(PermissionFlagsBits.SendMessages) ===
                     null
             ) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `${channel} is not explicitly locked (everyone can already send messages).` });
+                return await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: `Kanał ${channel} nie jest zablokowany (wszyscy mogą już wysyłać wiadomości).` 
+                });
             }
 
             await channel.permissionOverwrites.edit(
@@ -45,8 +47,8 @@ export default {
                 { SendMessages: true },
                 {
                     type: 0,
-                    reason: `Channel unlocked by ${interaction.user.tag}`,
-},
+                    reason: `Kanał odblokowany przez ${interaction.user.tag}`,
+                },
             );
 
             await logEvent({
@@ -63,17 +65,23 @@ export default {
                 }
             });
 
+            const description = `> \`🔓\` | **Kanał został odblokowany:** ${channel}\n` +
+                                `> \`💬\` | **Informacja:** Każdy może ponownie pisać na tym kanale.`;
+
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `🔓 **Channel Unlocked**`,
-                        `${channel} is now unlocked. You may speak now.`,
+                        "Kanał Odblokowany",
+                        description,
                     ),
                 ],
             });
         } catch (error) {
             logger.error('Unlock command error:', error);
-            await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'An unexpected error occurred while trying to unlock the channel. Check my permissions (I need \'Manage Channels\').' });
+            await replyUserError(interaction, { 
+                type: ErrorTypes.PERMISSION, 
+                message: 'Wystąpił błąd podczas próby odblokowania kanału. Sprawdź uprawnienia bota (wymagane: \'Zarządzanie kanałami\').' 
+            });
         }
     }
 };
