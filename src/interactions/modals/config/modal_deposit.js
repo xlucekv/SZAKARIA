@@ -20,8 +20,6 @@ export default {
         }
 
         const userId = interaction.user.id;
-        
-        // Automatycznie rejestrujemy wpłatę dla użytkownika, który kliknął
         const updatedCollection = await updateDeposit(messageId, userId, amount);
 
         const channel = await interaction.guild.channels.fetch(collection.channelId);
@@ -30,7 +28,7 @@ export default {
         const guild = interaction.guild;
         let totalSum = 0;
 
-        // Generujemy listę: jeśli wpłata > 0, dajemy ptaszek i pokazamo kwotę, w przeciwnym razie krzyżyk
+        // [+] oznacza wpłacone, [-] oznacza brak wpłaty
         const listText = Object.entries(updatedCollection.deposits)
             .map(([uId, val]) => {
                 totalSum += val;
@@ -38,14 +36,14 @@ export default {
                 const nameTag = member ? `${member}` : `<@${uId}>`;
                 
                 if (val > 0) {
-                    return `✅ ${nameTag} — **${val}**`;
+                    return `[+] ${nameTag} — **${val}**`;
                 }
-                return `❌ ${nameTag}`;
+                return `[-] ${nameTag}`;
             })
             .join('\n');
 
         const updatedEmbed = successEmbed(
-            `📦 Zbiórka — ${collection.title}`,
+            `Zbiórka — ${collection.title}`,
             `**Lista członków:**\n\n${listText}\n\n**Suma:**\n\`\`\`ansi\n\u001b[1;32m${totalSum}\u001b[0m ${collection.title}\n\`\`\``
         );
 
