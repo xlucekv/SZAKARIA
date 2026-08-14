@@ -3,10 +3,11 @@ import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '
 import { logger } from '../../utils/logger.js';
 import { getColor } from '../../config/bot.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('unixtime')
-        .setDescription('Get the current Unix timestamp'),
+        .setDescription('Pobierz aktualny znacznik czasu Unix (timestamp)'),
 
     async execute(interaction) {
         await InteractionHelper.safeExecute(
@@ -16,11 +17,11 @@ export default {
                 const unixTimestamp = Math.floor(now.getTime() / 1000);
 
                 const embed = successEmbed(
-                    '⏱️ Current Unix Timestamp',
-                    `**Seconds since Unix Epoch:** \`${unixTimestamp}\`\n` +
-                    `**Milliseconds since Unix Epoch:** \`${now.getTime()}\`\n\n` +
-                    `**Human-readable (UTC):** ${now.toUTCString()}\n` +
-                    `**ISO String:** ${now.toISOString()}`
+                    '⏱️ Aktualny znacznik czasu Unix',
+                    `**Sekundy od epoki Uniksa:** \`${unixTimestamp}\`\n` +
+                    `**Milisekundy od epoki Uniksa:** \`${now.getTime()}\`\n\n` +
+                    `**Czytelne dla człowieka (UTC):** ${now.toUTCString()}\n` +
+                    `**Ciąg ISO:** ${now.toISOString()}`
                 );
                 embed.setColor(getColor('success'));
 
@@ -28,7 +29,7 @@ export default {
                     embeds: [embed],
                 });
             },
-            'Failed to get unix timestamp. Please try again.',
+            'Nie udało się pobrać znacznika czasu Unix. Spróbuj ponownie.',
             {
                 autoDefer: true,
                 deferOptions: { flags: MessageFlags.Ephemeral }
