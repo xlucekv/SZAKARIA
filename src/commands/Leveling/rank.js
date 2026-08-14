@@ -3,7 +3,7 @@ import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes, replyUserError } from '../../utils/errorHandler.js';
 import { getUserLevelData, getLevelingConfig, getXpForLevel } from '../../services/leveling/leveling.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
-import { getColor } from '../../config/botConfig.js';
+import { getColor } from '../../../src/config/botConfig.js';
 import { createEmbed } from '../../utils/embeds.js';
 
 export default {
