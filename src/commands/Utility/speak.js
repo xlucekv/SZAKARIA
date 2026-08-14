@@ -58,10 +58,8 @@ export default {
 
             await interaction.editReply({ content: `Powiedziałam: "${text}"` });
 
-            // Bezpiecznik: 
-            // Szacujemy czas trwania (długość tekstu * 150ms + 3s bufora na połączenie)
-            // Używamy setTimeout jako głównego wyzwalacza wyjścia
-            const estimatedDuration = (text.length * 150) + 3000 + 2000; 
+            // Bezpiecznik z nieco dłuższym buforem (4 sekundy ekstra na spokojne wypowiedzenie całości + 2 sekundy ciszy)
+            const estimatedDuration = (text.length * 150) + 3000 + 4000; 
 
             setTimeout(() => {
                 const activePlayer = client.riffy.players.get(interaction.guild.id);
