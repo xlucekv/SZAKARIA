@@ -17,7 +17,7 @@ const TEXT_CHANNEL_TYPES = [
 ];
 
 function resolveTargetChannel(interaction) {
-    const selected = interaction.options.getChannel('channel');
+    const selected = interaction.options.getChannel('kanal');
     if (selected) {
         return selected;
     }
@@ -32,18 +32,18 @@ function resolveTargetChannel(interaction) {
 export default {
     data: new SlashCommandBuilder()
         .setName('say')
-        .setDescription('Send a plain message as the bot')
+        .setDescription('Wyślij zwykłą wiadomość jako bot')
         .addStringOption((option) =>
             option
-                .setName('message')
-                .setDescription('The message the bot should send')
+                .setName('wiadomosc')
+                .setDescription('Wiadomość, którą ma wysłać bot')
                 .setRequired(true)
                 .setMaxLength(2000),
         )
         .addChannelOption((option) =>
             option
-                .setName('channel')
-                .setDescription('Channel to send in (defaults to the current channel)')
+                .setName('kanal')
+                .setDescription('Kanał, na który wysłać wiadomość (domyślnie obecny kanał)')
                 .addChannelTypes(...TEXT_CHANNEL_TYPES)
                 .setRequired(false),
         )
@@ -65,13 +65,13 @@ export default {
             return;
         }
 
-        const rawMessage = interaction.options.getString('message');
+        const rawMessage = interaction.options.getString('wiadomosc');
         const message = sanitizeInput(rawMessage, 2000);
 
         if (!message) {
             return replyUserError(interaction, {
                 type: ErrorTypes.VALIDATION,
-                message: 'Message cannot be empty.',
+                message: 'Wiadomość nie może być pusta.',
             });
         }
 
@@ -79,7 +79,7 @@ export default {
         if (!channel) {
             return replyUserError(interaction, {
                 type: ErrorTypes.VALIDATION,
-                message: 'Choose a text channel or run this command in one.',
+                message: 'Wybierz kanał tekstowy lub uruchom tę komendę na jednym z nich.',
             });
         }
 
@@ -89,14 +89,14 @@ export default {
         if (!memberPermissions?.has(PermissionFlagsBits.SendMessages)) {
             return replyUserError(interaction, {
                 type: ErrorTypes.PERMISSION,
-                message: `You do not have permission to send messages in ${channel}.`,
+                message: `Nie posiadasz uprawnień do wysyłania wiadomości na kanale ${channel}.`,
             });
         }
 
         if (!botPermissions?.has(PermissionFlagsBits.SendMessages)) {
             return replyUserError(interaction, {
                 type: ErrorTypes.PERMISSION,
-                message: `I do not have permission to send messages in ${channel}.`,
+                message: `Bot nie posiada uprawnień do wysyłania wiadomości na kanale ${channel}.`,
             });
         }
 
@@ -121,11 +121,13 @@ export default {
             },
         });
 
+        const description = `> \`💬\` | **Wysłano wiadomość na kanał:** ${channel}\n> \`🔗\` | **Link do wiadomości:** [Przejdź do wiadomości](${sentMessage.url})`;
+
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
-                    'Message Sent',
-                    `Posted in ${channel}. [Jump to message](${sentMessage.url})`,
+                    'Wiadomość Wysłana',
+                    description,
                 ),
             ],
             flags: MessageFlags.Ephemeral,
