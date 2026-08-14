@@ -28,7 +28,6 @@ export default {
         const guild = interaction.guild;
         let totalSum = 0;
 
-        // [+] oznacza wpłacone, [-] oznacza brak wpłaty
         const listText = Object.entries(updatedCollection.deposits)
             .map(([uId, val]) => {
                 totalSum += val;
