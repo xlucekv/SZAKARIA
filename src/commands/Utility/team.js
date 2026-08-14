@@ -26,7 +26,6 @@ export default {
             });
         }
 
-        // Prawdziwe losowanie algorytmem Fishera-Yatesa
         for (let i = members.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [members[i], members[j]] = [members[j], members[i]];
@@ -46,7 +45,6 @@ export default {
 
         await interaction.reply({ content: teamOutput });
 
-        // Automatyczne usunięcie wiadomości po 1 minucie
         setTimeout(async () => {
             try {
                 const message = await interaction.fetchReply().catch(() => null);
