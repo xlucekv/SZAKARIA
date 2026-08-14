@@ -3,7 +3,7 @@ import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { getLeaderboard, getLevelingConfig, getXpForLevel } from '../../services/leveling/leveling.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
-import { getColor } from '../../config/botConfig.js';
+import { getColor } from '../../../src/config/botConfig.js';
 
 export default {
   data: new SlashCommandBuilder()
