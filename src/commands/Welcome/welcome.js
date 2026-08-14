@@ -9,28 +9,28 @@ import { ErrorTypes, replyUserError } from '../../utils/errorHandler.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('welcome')
-        .setDescription('Configure the welcome system')
+        .setDescription('Skonfiguruj system powitań')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setup')
-                .setDescription('Set up the welcome message')
+                .setDescription('Skonfiguruj wiadomość powitalną')
                 .addChannelOption(option =>
                     option.setName('channel')
-                        .setDescription('The channel to send welcome messages to')
+                        .setDescription('Kanał, na który będą wysyłane wiadomości powitalne')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('message')
-                        .setDescription('Welcome message. Variables: {user}, {username}, {server}, {memberCount}')
+                        .setDescription('Wiadomość powitalna. Zmienne: {user}, {username}, {server}, {memberCount}')
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('image')
-                        .setDescription('URL of the image to include in the welcome message')
+                        .setDescription('URL obrazu do dołączenia do wiadomości powitalnej')
                         .setRequired(false))
                 .addBooleanOption(option =>
                     option.setName('ping')
-                        .setDescription('Whether to ping the user in the welcome message')
+                        .setDescription('Czy oznaczyć użytkownika w wiadomości powitalnej')
                         .setRequired(false))),
 
     async execute(interaction) {
@@ -52,7 +52,7 @@ export default {
         const { options, guild, client } = interaction;
 
         if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the **Manage Server** permission to use `/welcome`.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'Potrzebujesz uprawnienia **Zarządzanie serwerem**, aby użyć `/welcome`.' });
         }
 
         const subcommand = options.getSubcommand();
@@ -66,12 +66,12 @@ export default {
             const existingConfig = await getWelcomeConfig(client, guild.id);
             if (existingConfig?.channelId) {
                 logger.info(`[Welcome] Setup blocked because config already exists in channel ${existingConfig.channelId} for guild ${guild.id}`);
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `Welcome is already configured for <#${existingConfig.channelId}>. Use **/greet dashboard** to customize channel, message, ping, or image.` });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `Powitania są już skonfigurowane na kanale <#${existingConfig.channelId}>. Użyj **/greet dashboard**, aby dostosować kanał, wiadomość, wzmiankę lub obraz.` });
             }
             
             if (!message || message.trim().length === 0) {
                 logger.warn(`[Welcome] Empty message provided by ${interaction.user.tag} in ${guild.name}`);
-                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Welcome message cannot be empty' });
+                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Wiadomość powitalna nie może być pusta' });
             }
 
             if (image) {
@@ -79,7 +79,7 @@ export default {
                     new URL(image);
                 } catch (e) {
                     logger.warn(`[Welcome] Invalid image URL provided by ${interaction.user.tag}: ${image}`);
-                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide a valid image URL (must start with http:// or https://' });
+                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Podaj prawidłowy adres URL obrazu (musi zaczynać się od http:// lub https://)' });
                 }
             }
 
@@ -101,14 +101,14 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(getColor('success'))
-                    .setTitle('Welcome System Configured')
-                    .setDescription(`Welcome messages will now be sent to ${channel}`)
+                    .setTitle('System powitań skonfigurowany')
+                    .setDescription(`Wiadomości powitalne będą teraz wysyłane na kanał ${channel}`)
                     .addFields(
-                        { name: 'Message Preview', value: truncateForEmbedField(previewMessage) },
-                        { name: 'Ping User', value: ping ? 'Yes' : 'No' },
-                        { name: 'Status', value: 'Enabled' }
+                        { name: 'Podgląd wiadomości', value: truncateForEmbedField(previewMessage) },
+                        { name: 'Oznacz użytkownika', value: ping ? 'Tak' : 'Nie' },
+                        { name: 'Status', value: 'Włączone' }
                     )
-                    .setFooter({ text: 'Tip: Use /greet dashboard to customize welcome settings' });
+                    .setFooter({ text: 'Wskazówka: Użyj /greet dashboard, aby dostosować ustawienia powitań' });
 
                 if (image) {
                     embed.setImage(image);
@@ -117,7 +117,7 @@ export default {
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             } catch (error) {
                 logger.error(`[Welcome] Failed to setup welcome system for guild ${guild.id}:`, error);
-                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while configuring the welcome system. Please try again.' });
+                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Wystąpił błąd podczas konfigurowania systemu powitań. Spróbuj ponownie.' });
             }
         }
     },
