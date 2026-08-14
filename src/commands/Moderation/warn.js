@@ -1,26 +1,27 @@
-import { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField, ChannelType, MessageFlags } from 'discord.js';
-import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { successEmbed } from '../../utils/embeds.js';
 import { logModerationAction } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { WarningService } from '../../services/moderation/warningService.js';
 import { ModerationService } from '../../services/moderation/moderationService.js';
 import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("warn")
-        .setDescription("Warn a user")
+        .setDescription("Udziel ostrzeżenia użytkownikowi")
         .addUserOption((o) =>
             o
-                .setName("target")
+                .setName("uzytkownik")
                 .setRequired(true)
-                .setDescription("User to warn"),
+                .setDescription("Użytkownik, który ma otrzymać ostrzeżenie"),
         )
         .addStringOption((o) =>
             o
-                .setName("reason")
+                .setName("powod")
                 .setRequired(true)
-                .setDescription("Reason for the warning"),
+                .setDescription("Powód udzielenia ostrzeżenia"),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
@@ -36,9 +37,9 @@ export default {
             return;
         }
 
-        const target = interaction.options.getUser("target");
-        const member = interaction.options.getMember("target");
-        const reason = interaction.options.getString("reason");
+        const target = interaction.options.getUser("uzytkownik");
+        const member = interaction.options.getMember("uzytkownik");
+        const reason = interaction.options.getString("powod");
         const moderator = interaction.user;
         const guildId = interaction.guildId;
 
@@ -46,7 +47,7 @@ export default {
             throw new TitanBotError(
                 'Missing target user',
                 ErrorTypes.USER_INPUT,
-                'You must specify a user to warn.',
+                'Musisz wskazać użytkownika, któremu chcesz dać ostrzeżenie.',
                 { subtype: 'invalid_user' },
             );
         }
@@ -55,7 +56,7 @@ export default {
             throw new TitanBotError(
                 'Missing warning reason',
                 ErrorTypes.VALIDATION,
-                'You must provide a reason for the warning.',
+                'Musisz podać powód udzielenia ostrzeżenia.',
                 { subtype: 'missing_required' },
             );
         }
@@ -64,7 +65,7 @@ export default {
             throw new TitanBotError(
                 "Target not found",
                 ErrorTypes.USER_INPUT,
-                "The target user is not currently in this server."
+                "Wskazany użytkownik nie znajduje się obecnie na tym serwerze."
             );
         }
 
@@ -96,11 +97,15 @@ export default {
             }
         });
 
+        const description = `> \`⚠️\` | **Udzielono ostrzeżenia:** ${target.tag} (\`${target.id}\`)\n` +
+                            `> \`📝\` | **Powód:** ${reason}\n` +
+                            `> \`📊\` | **Łączna liczba ostrzeżeń:** ${totalCount}`;
+
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
-                    `⚠️ **Warned** ${target.tag}`,
-                    `**Reason:** ${reason}\n**Total Warns:** ${totalCount}`,
+                    "Ostrzeżenie Udzielone",
+                    description,
                 ),
             ],
         });
