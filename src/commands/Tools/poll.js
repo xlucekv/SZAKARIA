@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 const EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
@@ -146,20 +146,73 @@ export default {
         const optionsFormatted = options.map((option, index) => `> \`${EMOJIS[index]}\` ${option}`).join('\n');
 
         let pollMessage = `## 📊 **Klanowe Głosowanie**\n` +
-                          `> \`💬\` **Pytanie:** ${question}\n` +
-                          `> \`⏳\` **Czas trwania:** ${durationFormatted}\n` +
-                          `> \`👤\` **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}\n\n` +
+                          `- 💬 **Pytanie:** ${question}\n` +
+                          `- ⏳ **Czas trwania:** ${durationFormatted}\n` +
+                          `- 👤 **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}\n\n` +
                           `${optionsFormatted}`;
 
-        const message = await interaction.channel.send({ content: pollMessage });
+        // Tworzenie przycisków (maksymalnie 5 w jednym rzędzie, Discord pozwala na max 5 rzędów)
+        const rows = [];
+        let currentRow = new ActionRowBuilder();
 
-        for (let i = 0; i < options.length; i++) {
-            await message.react(EMOJIS[i]);
-            await new Promise(resolve => setTimeout(resolve, 300));
+        options.forEach((_, index) => {
+            if (currentRow.components.length === 5) {
+                rows.push(currentRow);
+                currentRow = new ActionRowBuilder();
+            }
+
+            currentRow.addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`poll_opt_${index}`)
+                    .setEmoji(EMOJIS[index])
+                    .setStyle(ButtonStyle.Secondary)
+            );
+        });
+
+        if (currentRow.components.length > 0) {
+            rows.push(currentRow);
         }
+
+        const message = await interaction.channel.send({ 
+            content: pollMessage, 
+            components: rows 
+        });
 
         await InteractionHelper.safeEditReply(interaction, {
             content: '✅ Ankieta została pomyślnie utworzona!'
+        });
+
+        // Struktura przechowująca głosy: mapowanie index opcji -> Set user ID
+        const votesMap = new Map();
+        options.forEach((_, index) => votesMap.set(index, new Set()));
+
+        // Kolektor interakcji przycisków
+        const collector = message.createMessageComponentCollector({ time: durationMs });
+
+        collector.on('collect, async (i) => {
+            const optionIndex = parseInt(i.customId.replace('poll_opt_', ''), 10);
+            const userId = i.user.id;
+
+            // Sprawdzamy czy użytkownik już gdzieś głosował (1 głos na użytkownika)
+            let previousVoteIndex = -1;
+            for (const [idx, userSet] of votesMap.entries()) {
+                if (userSet.has(userId)) {
+                    previousVoteIndex = idx;
+                    break;
+                }
+            }
+
+            if (previousVoteIndex === optionIndex) {
+                // Jeśli kliknął to samo, cofamy głos (przełącznik)
+                votesMap.get(optionIndex).delete(userId);
+                await i.reply({ content: '❌ Twój głos został wycofany.', flags: MessageFlags.Ephemeral });
+            } else {
+                if (previousVoteIndex !== -1) {
+                    votesMap.get(previousVoteIndex).delete(userId);
+                }
+                votesMap.get(optionIndex).add(userId);
+                await i.reply({ content: `✅ Twój głos został zapisany na opcję **${EMOJIS[optionIndex]}**!`, flags: MessageFlags.Ephemeral });
+            }
         });
 
         const getVotesWord = (count) => {
@@ -168,8 +221,8 @@ export default {
             return `${count} głosów`;
         };
 
-        // Harmonogram zakończenia ankiety
-        setTimeout(async () => {
+        // Zakończenie ankiety po czasie
+        collector.on('end', async () => {
             try {
                 const fetchedMsg = await message.channel.messages.fetch(message.id).catch(() => null);
                 if (!fetchedMsg) return;
@@ -179,32 +232,39 @@ export default {
                 let winningOptionIndex = -1;
 
                 options.forEach((option, index) => {
-                    const reaction = fetchedMsg.reactions.cache.get(EMOJIS[index]);
-                    const votes = reaction ? Math.max(0, reaction.count - 1) : 0;
-                    
-                    resultsText = resultsText ? `${resultsText}\n> \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**` : `> \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**`;
+                    const userSet = votesMap.get(index) || new Set();
+                    const count = userSet.size;
 
-                    if (votes > maxVotes) {
-                        maxVotes = votes;
+                    // Budujemy listę osób, które zaznaczyły tę opcję (jeśli ankieta nie była anonimowa lub zawsze pokazujemy w wynikach)
+                    let votersList = '';
+                    if (!isAnonymous && count > 0) {
+                        const names = Array.from(userSet).map(id => `<@${id}>`).join(', ');
+                        votersList = `\n  ↳ *Głosujący: ${names}*`;
+                    }
+
+                    resultsText = resultsText ? `${resultsText}\n- \`${EMOJIS[index]}\` ${option} — **${getVotesWord(count)}**${votersList}` : `- \`${EMOJIS[index]}\` ${option} — **${getVotesWord(count)}**${votersList}`;
+
+                    if (count > maxVotes) {
+                        maxVotes = count;
                         winningOptionIndex = index;
                     }
                 });
 
                 let closedContent = `## 📊 **Wyniki Głosowania**\n` +
-                                    `> \`💬\` **Pytanie:** ${question}\n` +
-                                    `> \`🏁\` **Status:** Zakończone\n\n` +
-                                    `> \`📈\` **Wyniki:**\n${resultsText}\n\n`;
+                                    `- 💬 **Pytanie:** ${question}\n` +
+                                    `- 🏁 **Status:** Zakończone\n\n` +
+                                    `- 📈 **Wyniki:**\n${resultsText}\n\n`;
 
                 if (maxVotes > 0 && winningOptionIndex !== -1) {
-                    closedContent += `> \`🏆\` **Wygrana opcja:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${getVotesWord(maxVotes)})\n`;
+                    closedContent += `- 🏆 **Wygrana opcja:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${getVotesWord(maxVotes)})\n`;
                 } else {
-                    closedContent += `> \`❌\` **Brak oddanych głosów w ankiecie.**\n`;
+                    closedContent += `- ❌ **Brak oddanych głosów w ankiecie.**\n`;
                 }
 
-                await fetchedMsg.edit({ content: closedContent });
-                await fetchedMsg.reactions.removeAll().catch(() => {});
+                // Edytujemy wiadomość, usuwamy przyciski (components: [])
+                await fetchedMsg.edit({ content: closedContent, components: [] });
 
-                // Harmonogram usunięcia wiadomości po 24 godzinach od zakończenia
+                // Usunięcie wiadomości po 24 godzinach od zakończenia
                 setTimeout(async () => {
                     try {
                         const finalMsg = await message.channel.messages.fetch(message.id).catch(() => null);
@@ -217,8 +277,8 @@ export default {
                 }, 24 * 60 * 60 * 1000);
 
             } catch (err) {
-                console.error('Błąd podczas kończenia ankiety:', err);
+                console.error('Błąd podczas kończenia ankiety przyciskowej:', err);
             }
-        }, durationMs);
+        });
     },
 };
