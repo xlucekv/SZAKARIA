@@ -5,20 +5,21 @@ import { getColor } from '../../config/bot.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('hexcolor')
-        .setDescription('Generate a random hex color with preview')
+        .setDescription('Wygeneruj losowy kolor HEX z podglądem')
         .addStringOption(option =>
-            option.setName('color')
-                .setDescription('Specific hex color (e.g., #FF5733 or FF5733)')
+            option.setName('kolor')
+                .setDescription('Konkretny kolor HEX (np. #FF5733 lub FF5733)')
                 .setRequired(false)),
 
     async execute(interaction) {
         await InteractionHelper.safeExecute(
             interaction,
             async () => {
-                let hexColor = interaction.options.getString('color');
+                let hexColor = interaction.options.getString('kolor');
                 let isRandom = false;
 
                 if (!hexColor) {
@@ -27,7 +28,7 @@ export default {
                 } else {
                     hexColor = hexColor.replace('#', '');
                     if (!/^[0-9A-Fa-f]{3,6}$/.test(hexColor)) {
-                        return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide a valid hex code.\n\n**Valid formats:**\n• `#FF5733` (with hash)\n• `FF5733` (without hash)\n• `F57` (3-digit shorthand)\n\n**Invalid:** `#GG5733` (G is not a hex digit)' });
+                        return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Podaj poprawny kod HEX.\n\n**Poprawne formaty:**\n• `#FF5733` (ze znakiem #)\n• `FF5733` (bez znaku #)\n• `F57` (skrócony format 3-cyfrowy)\n\n**Niepoprawne:** `#GG5733` (G nie jest cyfrą heksadecymalną)' });
                     }
 
                     if (hexColor.length === 3) {
@@ -49,22 +50,22 @@ export default {
                 const colorName = getColorName(hexColor);
 
                 const embed = successEmbed(
-                    '🎨 Color Information',
-                    `**Hex:** \`${hexColor}\`\n` +
+                    '🎨 Informacje o kolorze',
+                    `**HEX:** \`${hexColor}\`\n` +
                     `**RGB:** \`rgb(${r}, ${g}, ${b})\`\n` +
                     `**HSL:** \`${rgbToHsl(r, g, b)}\`\n` +
-                    `**Name:** ${colorName || 'Custom Color'}`
+                    `**Nazwa:** ${colorName || 'Niestandardowy kolor'}`
                 )
                     .setColor(hexColor)
                     .setImage(colorPreviewUrl);
 
                 if (isRandom) {
-                    embed.setFooter({ text: 'Randomly generated color' });
+                    embed.setFooter({ text: 'Losowo wygenerowany kolor' });
                 }
 
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             },
-            'Failed to generate color information. Please try again.',
+            'Nie udało się wygenerować informacji o kolorze. Spróbuj ponownie.',
             {
                 autoDefer: true,
                 deferOptions: { flags: MessageFlags.Ephemeral }
@@ -79,7 +80,7 @@ function rgbToHsl(r, g, b) {
     let h, s, l = (max + min) / 2;
 
     if (max === min) {
-h = s = 0;
+        h = s = 0;
     } else {
         const d = max - min;
         s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -96,26 +97,26 @@ h = s = 0;
 
 function getColorName(hex) {
     const colors = {
-        '#FF0000': 'Red',
-        '#00FF00': 'Green',
-        '#0000FF': 'Blue',
-        '#FFFF00': 'Yellow',
+        '#FF0000': 'Czerwony',
+        '#00FF00': 'Zielony',
+        '#0000FF': 'Niebieski',
+        '#FFFF00': 'Żółty',
         '#FF00FF': 'Magenta',
-        '#00FFFF': 'Cyan',
-        '#000000': 'Black',
-        '#FFFFFF': 'White',
-        '#808080': 'Gray',
-        '#FFA500': 'Orange',
-        '#800080': 'Purple',
-        '#A52A2A': 'Brown',
-        '#FFC0CB': 'Pink',
-        '#008000': 'Dark Green',
-        '#000080': 'Navy',
-        '#FFD700': 'Gold',
-        '#C0C0C0': 'Silver',
-        '#FF6347': 'Tomato',
-        '#40E0D0': 'Turquoise',
-        '#E6E6FA': 'Lavender'
+        '#00FFFF': 'Cyjan',
+        '#000000': 'Czarny',
+        '#FFFFFF': 'Biały',
+        '#808080': 'Szary',
+        '#FFA500': 'Pomarańczowy',
+        '#800080': 'Fioletowy',
+        '#A52A2A': 'Brązowy',
+        '#FFC0CB': 'Różowy',
+        '#008000': 'Ciemnozielony',
+        '#000080': 'Granatowy',
+        '#FFD700': 'Złoty',
+        '#C0C0C0': 'Srebrny',
+        '#FF6347': 'Pomidorowy',
+        '#40E0D0': 'Turkusowy',
+        '#E6E6FA': 'Lawendowy'
     };
     
     if (colors[hex.toUpperCase()]) {
@@ -136,5 +137,5 @@ function getColorName(hex) {
         }
     }
     
-    return minDistance < 1000000 ? `Close to ${closestColor}` : null;
+    return minDistance < 1000000 ? `Zbliżony do: ${closestColor}` : null;
 }
