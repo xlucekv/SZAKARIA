@@ -8,22 +8,22 @@ import reportSetchannel from './modules/report_setchannel.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('report')
-        .setDescription('Report a user to server staff, or configure where reports are sent.')
+        .setDescription('Zgłoś użytkownika administracji serwera lub skonfiguruj kanał zgłoszeń.')
         .setDMPermission(false)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('file')
-                .setDescription('Report a user to the server moderation team.')
+                .setDescription('Zgłoś użytkownika zespołowi moderacji serwera.')
                 .addUserOption(option =>
                     option
-                        .setName('user')
-                        .setDescription('The user you want to report.')
+                        .setName('uzytkownik')
+                        .setDescription('Użytkownik, którego chcesz zgłosić.')
                         .setRequired(true),
                 )
                 .addStringOption(option =>
                     option
-                        .setName('reason')
-                        .setDescription('The reason for the report (be detailed).')
+                        .setName('powod')
+                        .setDescription('Powód zgłoszenia (opisz go szczegółowo).')
                         .setRequired(true)
                         .setMaxLength(500),
                 ),
@@ -31,11 +31,11 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setchannel')
-                .setDescription('Set the channel where user reports are sent. (Manage Server required)')
+                .setDescription('Ustaw kanał, na który będą wysyłane zgłoszenia użytkowników. (Wymagane: Zarządzanie serwerem)')
                 .addChannelOption(option =>
                     option
-                        .setName('channel')
-                        .setDescription('The text channel to receive reports.')
+                        .setName('kanal')
+                        .setDescription('Kanał tekstowy, na który mają trafiać zgłoszenia.')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true),
                 ),
@@ -53,6 +53,6 @@ export default {
             return await reportSetchannel.execute(interaction, config, client);
         }
 
-        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Unknown subcommand.' });
+        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Nieznana podkomenda.' });
     },
 };
