@@ -3,34 +3,30 @@ import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, Ac
 export default {
     data: new SlashCommandBuilder()
         .setName('sendmessage')
-        .setDescription('Otwiera okno wysyłania jednorazowej wiadomości DM do wszystkich')
+        .setDescription('Wysyła wiadomość DM do wszystkich użytkowników na serwerze')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     
-    category: 'Admin',
+    category: 'Utility',
 
-    async execute(interaction) {
+    async execute(interaction, guildConfig, client) {
         const modal = new ModalBuilder()
             .setCustomId('send_global_dm_modal')
             .setTitle('Wiadomość globalna do wszystkich');
 
         const messageInput = new TextInputBuilder()
             .setCustomId('dm_content')
-            .setLabel('Treść wiadomości do wysłania:')
+            .setLabel('Treść wiadomości:')
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Wpisz tutaj treść ogłoszenia...')
+            .setPlaceholder('Wpisz treść ogłoszenia...')
             .setRequired(true);
 
-        const actionRow = new ActionRowBuilder().addComponents(messageInput);
-        modal.addComponents(actionRow);
-
+        modal.addComponents(new ActionRowBuilder().addComponents(messageInput));
         await interaction.showModal(modal);
     },
 
-    async handleModal(interaction) {
-        if (!interaction.isModalSubmit() || interaction.customId !== 'send_global_dm_modal') return;
-
+    async handleModal(interaction, client) {
         const text = interaction.fields.getTextInputValue('dm_content');
-        await interaction.reply({ content: `> \`⏳\` | Rozpoczynam wysyłanie wiadomości do użytkowników...`, ephemeral: true });
+        await interaction.reply({ content: '⏳ | Rozpoczynam wysyłanie wiadomości...', ephemeral: true });
 
         const guild = interaction.guild;
         await guild.members.fetch();
@@ -43,7 +39,7 @@ export default {
 
             try {
                 await member.send({
-                    content: `> \`📢\` | **Wiadomość z serwera ${guild.name}:**\n\n${text}`
+                    content: `📢 **Wiadomość z serwera ${guild.name}:**\n\n${text}`
                 });
                 successCount++;
             } catch (err) {
@@ -52,7 +48,7 @@ export default {
         }
 
         await interaction.editReply({
-            content: `> \`✅\` | **Rozesłano wiadomości!**\n> • Dostarczono: **${successCount}**\n> • Nie udało się (zamknięte PW): **${failCount}**`
+            content: `✅ | **Rozesłano wiadomości!**\n• Dostarczono: **${successCount}**\n• Nie udało się (zamknięte PW): **${failCount}**`
         });
     }
 };
