@@ -8,7 +8,7 @@ export const botConfig = {
     status: "online", // "online" | "idle" | "dnd" | "invisible"
     activities: [
       {
-        name: "Custom Status",
+        name: "SZAK",
         state: "stalking",
         type: 4, // 4 = Custom Status
       },
