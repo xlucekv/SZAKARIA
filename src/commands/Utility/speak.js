@@ -46,7 +46,6 @@ export default {
                 player.connect();
             }
 
-            // Pobieramy track przez Riffy
             const resolve = await client.riffy.resolve({
                 query: ttsUrl,
                 requester: interaction.user,
@@ -64,6 +63,20 @@ export default {
             }
 
             await interaction.editReply({ content: `Weszłam na kanał i powiedziałam: "${text}"` });
+
+            // Zabezpieczenie: Odczytanie dokładnego czasu audio (z Lavalink) 
+            // Jeśli Lavalink odczyta czas jako 0 (stream), szacujemy czas z długości tekstu (~150ms na znak)
+            const trackDuration = track.info.length > 0 ? track.info.length : text.length * 150; 
+            
+            // Ustawienie timera: Czas trwania nagrania + 2000 milisekund (2 sekundy)
+            setTimeout(() => {
+                const currentPlayer = client.riffy.players.get(interaction.guild.id);
+                // Niszczymy odtwarzacz (bot opuszcza kanał)
+                if (currentPlayer) {
+                    currentPlayer.destroy();
+                }
+            }, trackDuration + 2000);
+
         } catch (error) {
             console.error('Błąd TTS Riffy:', error);
             await interaction.editReply({ content: 'Wystąpił błąd podczas próby odtworzenia mowy.' });
