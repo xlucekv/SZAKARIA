@@ -29,10 +29,12 @@ export default {
         }
 
         const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-        const optionsFormatted = optionsInput.map((o, i) => `> ${emojis[i]} ┃ **${o}**`).join('\n');
+        
+        // Budujemy linie dokładnie w stylu klanowym z emoji ┃
+        const optionsFormatted = optionsInput.map((o, i) => `> • \`${emojis[i]}\` ┃ **${o}**`).join('\n');
 
         const pollMessage = `> \`📊\` | **Klanowe Głosowanie**\n\n` +
-                            `> **Pytanie:** *${question}*\n\n` +
+                            `> • \`💬\` | **Pytanie:** *${question}*\n\n` +
                             `${optionsFormatted}\n\n` +
                             `> ━━━━━━━━━━━━━━━━━━━━\n` +
                             `> \`👤\` | **Inicjator:** ${interaction.user.tag} (\`${interaction.user.id}\`)`;
