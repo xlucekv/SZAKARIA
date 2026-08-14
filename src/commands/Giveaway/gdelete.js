@@ -4,28 +4,31 @@ import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { getGuildGiveaways, deleteGiveaway } from '../../utils/giveaways.js';
 import { logEvent, EVENT_TYPES } from '../../services/loggingService.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("gdelete")
-        .setDescription(
-            "Deletes a giveaway message and removes it from the database.",
-        )
+        .setDescription("Usuwa wiadomość konkursową oraz dane konkursu z bazy danych.")
         .addStringOption((option) =>
             option
                 .setName("messageid")
-                .setDescription("The message ID of the giveaway to delete.")
+                .setDescription("ID wiadomości konkursowej do usunięcia.")
                 .setRequired(true),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
-    async execute(interaction) {
+    category: 'Utility',
+
+    async execute(interaction, guildConfig, client) {
+        // Bezpieczne odroczenie odpowiedzi ze względu na operacje sieciowe i bazodanowe
+        await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
+
         if (!interaction.inGuild()) {
             throw new TitanBotError(
                 'Giveaway command used outside guild',
                 ErrorTypes.VALIDATION,
-                'This command can only be used in a server.',
+                'Ta komenda może być używana tylko na serwerze.',
                 { userId: interaction.user.id }
             );
         }
@@ -34,12 +37,12 @@ export default {
             throw new TitanBotError(
                 'User lacks ManageGuild permission',
                 ErrorTypes.PERMISSION,
-                "You need the 'Manage Server' permission to delete a giveaway.",
+                "Nie masz uprawnień 'Zarządzanie serwerem', aby usunąć konkurs.",
                 { userId: interaction.user.id, guildId: interaction.guildId }
             );
         }
 
-        logger.info(`Giveaway deletion started by ${interaction.user.tag} in guild ${interaction.guildId}`);
+        logger.info(`Rozpoczęcie usuwania konkursu przez ${interaction.user.tag} na serwerze ${interaction.guildId}`);
 
         const messageId = interaction.options.getString("messageid");
 
@@ -47,7 +50,7 @@ export default {
             throw new TitanBotError(
                 'Invalid message ID format',
                 ErrorTypes.VALIDATION,
-                'Please provide a valid message ID.',
+                'Podaj prawidłowe ID wiadomości.',
                 { providedId: messageId }
             );
         }
@@ -59,13 +62,13 @@ export default {
             throw new TitanBotError(
                 `Giveaway not found: ${messageId}`,
                 ErrorTypes.VALIDATION,
-                "No giveaway was found with that message ID.",
+                "Nie znaleziono konkursu o podanym ID wiadomości.",
                 { messageId, guildId: interaction.guildId }
             );
         }
 
         let deletedMessage = false;
-        let channelName = "Unknown Channel";
+        let channelName = "Nieznany kanał";
 
         const tryDeleteFromChannel = async (channel) => {
             if (!channel || !channel.isTextBased() || !channel.messages?.fetch) {
@@ -78,7 +81,7 @@ export default {
             }
 
             await message.delete();
-            channelName = channel.name || 'unknown-channel';
+            channelName = channel.name || 'nieznany-kanal';
             deletedMessage = true;
             return true;
         };
@@ -86,7 +89,7 @@ export default {
         try {
             const channel = await interaction.client.channels.fetch(giveaway.channelId).catch(() => null);
             if (await tryDeleteFromChannel(channel)) {
-                logger.debug(`Deleted giveaway message ${messageId} from channel ${channelName}`);
+                logger.debug(`Usunięto wiadomość konkursu ${messageId} z kanału ${channelName}`);
             }
 
             if (!deletedMessage && interaction.guild) {
@@ -97,13 +100,13 @@ export default {
                 for (const [, guildChannel] of textChannels) {
                     const foundAndDeleted = await tryDeleteFromChannel(guildChannel).catch(() => false);
                     if (foundAndDeleted) {
-                        logger.debug(`Deleted giveaway message ${messageId} via fallback lookup in #${channelName}`);
+                        logger.debug(`Usunięto wiadomość konkursu ${messageId} przez wyszukiwanie zapasowe w #${channelName}`);
                         break;
                     }
                 }
             }
         } catch (error) {
-            logger.warn(`Could not delete giveaway message: ${error.message}`);
+            logger.warn(`Nie udało się usunąć wiadomości konkursu: ${error.message}`);
         }
 
         const removedFromDatabase = await deleteGiveaway(
@@ -116,7 +119,7 @@ export default {
             throw new TitanBotError(
                 `Failed to delete giveaway from database: ${messageId}`,
                 ErrorTypes.UNKNOWN,
-                'The giveaway could not be removed from the database. Please try again.',
+                'Nie udało się usunąć konkursu z bazy danych. Spróbuj ponownie.',
                 { messageId, guildId: interaction.guildId }
             );
         }
@@ -128,26 +131,26 @@ export default {
             throw new TitanBotError(
                 `Giveaway still exists after deletion: ${messageId}`,
                 ErrorTypes.UNKNOWN,
-                'Deletion did not persist in the database. Please try again.',
+                'Usunięcie nie zapisało się w bazie danych. Spróbuj ponownie.',
                 { messageId, guildId: interaction.guildId }
             );
         }
 
         const statusMsg = deletedMessage
-            ? `and the message was deleted from #${channelName}`
-            : `but the message was already deleted or the channel was inaccessible.`;
+            ? `i wiadomość została usunięta z kanału #${channelName}`
+            : `ale wiadomość została już wcześniej usunięta lub kanał był niedostępny.`;
 
         const winnerIds = Array.isArray(giveaway.winnerIds) ? giveaway.winnerIds : [];
         const hasWinners = winnerIds.length > 0;
         const wasEnded = giveaway.ended === true || giveaway.isEnded === true || hasWinners;
 
         const winnerStatusMsg = hasWinners
-            ? `This giveaway already had ${winnerIds.length} winner(s) selected.`
+            ? `Ten konkurs miał już wyłonionego/ych ${winnerIds.length} zwycięzcę/ów.`
             : wasEnded
-                ? 'This giveaway was ended with no valid winners.'
-                : 'No winner was picked before deletion.';
+                ? 'Ten konkurs został zakończony bez prawidłowych zwycięzców.'
+                : 'Nie wylosowano żadnego zwycięzcy przed usunięciem.';
 
-        logger.info(`Giveaway deleted: ${messageId} in ${channelName}`);
+        logger.info(`Konkurs usunięty: ${messageId} w ${channelName}`);
 
         try {
             await logEvent({
@@ -155,32 +158,24 @@ export default {
                 guildId: interaction.guildId,
                 eventType: EVENT_TYPES.GIVEAWAY_DELETE,
                 data: {
-                    description: `Giveaway deleted: ${giveaway.prize}`,
+                    description: `Usunięto konkurs: ${giveaway.prize}`,
                     channelId: giveaway.channelId,
                     userId: interaction.user.id,
                     fields: [
-                        {
-                            name: 'Prize',
-                            value: giveaway.prize || 'Unknown',
-                            inline: true
-                        },
-                        {
-                            name: 'Entries',
-                            value: (giveaway.participants?.length || 0).toString(),
-                            inline: true
-                        }
+                        { name: 'Nagroda', value: giveaway.prize || 'Nieznana', inline: true },
+                        { name: 'Uczestnicy', value: (giveaway.participants?.length || 0).toString(), inline: true }
                     ]
                 }
             });
         } catch (logError) {
-            logger.debug('Error logging giveaway deletion:', logError);
+            logger.debug('Błąd podczas logowania usunięcia konkursu:', logError);
         }
 
         return InteractionHelper.safeReply(interaction, {
             embeds: [
                 successEmbed(
-                    "Giveaway Deleted",
-                    `Successfully deleted the giveaway for **${giveaway.prize}** ${statusMsg}. ${winnerStatusMsg}`,
+                    "Konkurs usunięty",
+                    `Pomyślnie usunięto konkurs dla **${giveaway.prize}** ${statusMsg}. ${winnerStatusMsg}`
                 ),
             ],
             flags: MessageFlags.Ephemeral,
