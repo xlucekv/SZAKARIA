@@ -4,26 +4,27 @@ import { getConfirmationButtons } from '../../utils/components.js';
 import { logger } from '../../utils/logger.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName('wipedata')
-        .setDescription('Delete all your personal data from the bot (irreversible)'),
+        .setDescription('Usuń wszystkie swoje dane osobowe z bota (nieodwracalne)'),
 
     async execute(interaction, guildConfig, client) {
         const warningMessage = 
-            `⚠️ **THIS ACTION IS IRREVERSIBLE!** ⚠️\n\n` +
-            `This will permanently delete **ALL** your data from this server including:\n` +
-            `• 💰 Economy balance (wallet & bank)\n` +
-            `• 📊 Levels and XP\n` +
-            `• 🎒 Inventory items\n` +
-            `• 🛍️ Shop purchases\n` +
-            `• 🎂 Birthday information\n` +
-            `• 🔢 Counter data\n` +
-            `• 📋 All other personal data\n\n` +
-            `**This cannot be undone. Are you absolutely sure?**`;
+            `⚠️ **TA AKCJA JEST NIEODWRACALNA!** ⚠️\n\n` +
+            `Spowoduje to trwale usunięcie **WSZYSTKICH** Twoich danych z tego serwera, w tym:\n` +
+            `• 💰 Stan konta ekonomii (portfel i bank)\n` +
+            `• 📊 Poziomy oraz punkty XP\n` +
+            `• 🎒 Przedmioty z ekwipunku\n` +
+            `• 🛍️ Zakupy ze sklepu\n` +
+            `• 🎂 Informacje o urodzinach\n` +
+            `• 🔢 Dane liczników\n` +
+            `• 📋 Wszystkie inne dane osobowe\n\n` +
+            `**Tego kroku nie można cofnąć. Czy jesteś absolutnie pewien/pewna?**`;
 
-        const embed = warningEmbed('Wipe All Data', warningMessage);
+        const embed = warningEmbed('Usuwanie wszystkich danych', warningMessage);
 
         const confirmButtons = getConfirmationButtons('wipedata');
 
