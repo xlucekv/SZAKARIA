@@ -29,18 +29,39 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            // Bezpośrednie wygenerowanie linku TTS Google bez zewnętrznych paczek
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=pl&client=tw-ob`;
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=pl&client=tw-ob`;
 
-            const player = client.riffy.createConnection({
-                guildId: interaction.guild.id,
-                voiceChannel: channel.id,
-                textChannel: interaction.channel.id,
-                deaf: true,
+            let player = client.riffy.players.get(interaction.guild.id);
+
+            if (!player) {
+                player = client.riffy.createConnection({
+                    guildId: interaction.guild.id,
+                    voiceChannel: channel.id,
+                    textChannel: interaction.channel.id,
+                    deaf: true,
+                });
+            }
+
+            if (!player.connected) {
+                player.connect();
+            }
+
+            // Pobieramy track przez Riffy
+            const resolve = await client.riffy.resolve({
+                query: ttsUrl,
+                requester: interaction.user,
             });
 
-            player.connect();
-            player.play({ track: url });
+            if (!resolve || !resolve.tracks || resolve.tracks.length === 0) {
+                return await interaction.editReply({ content: 'Nie udało się wygenerować strumienia audio dla tego tekstu.' });
+            }
+
+            const track = resolve.tracks[0];
+            player.queue.add(track);
+
+            if (!player.playing && !player.paused) {
+                player.play();
+            }
 
             await interaction.editReply({ content: `Weszłam na kanał i powiedziałam: "${text}"` });
         } catch (error) {
