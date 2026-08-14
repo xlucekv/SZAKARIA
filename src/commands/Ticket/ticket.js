@@ -157,7 +157,7 @@ export default {
                         .setEmoji('💎'),
 
                     new StringSelectMenuOptionBuilder()
-                        .setLabel('Inne / Tickets')
+                        .setLabel('Inne')
                         .setValue('inne')
                         .setDescription('Pozostałe kwestie niepasujące do powyższych kategorii.')
                         .setEmoji('🎫')
