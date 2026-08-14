@@ -41,11 +41,11 @@ export default {
             deposits[member.id] = 0;
         });
 
-        // Wszędzie zaczynamy od krzyżyków
-        const listText = membersWithRole.map(member => `❌ ${member}`).join('\n');
+        // Używamy bezpiecznych znaków [-] zamiast emotek
+        const listText = membersWithRole.map(member => `[-] ${member}`).join('\n');
 
         const embed = successEmbed(
-            `📦 Zbiórka — ${title}`,
+            `Zbiórka — ${title}`,
             `**Lista członków (${targetRole.name}):**\n\n${listText}\n\n**Suma:**\n\`\`\`ansi\n\u001b[1;32m0\u001b[0m ${title}\n\`\`\``
         );
 
@@ -54,7 +54,6 @@ export default {
                 .setCustomId('zbiorka_deposit')
                 .setLabel('Zgłoś wpłatę')
                 .setStyle(ButtonStyle.Primary)
-                .setEmoji('💰')
         );
 
         const message = await interaction.channel.send({
