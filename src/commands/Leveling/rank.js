@@ -1,8 +1,10 @@
-import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { logger } from '../../utils/logger.js';
-import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
+import { TitanBotError, ErrorTypes, replyUserError } from '../../utils/errorHandler.js';
 import { getUserLevelData, getLevelingConfig, getXpForLevel } from '../../services/leveling/leveling.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+import { getColor } from '../../config/botConfig.js';
+import { createEmbed } from '../../utils/embeds.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -22,18 +24,26 @@ export default {
 
     const levelingConfig = await getLevelingConfig(client, interaction.guildId);
     if (!levelingConfig?.enabled) {
-      await InteractionHelper.safeEditReply(interaction, {
+      return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
-          new EmbedBuilder()
-            .setColor('#f1c40f')
-            .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
+          createEmbed({
+            title: 'System Poziomów',
+            description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
+            color: 'warning',
+          }),
         ],
-        flags: MessageFlags.Ephemeral
       });
-      return;
     }
 
     const targetUser = interaction.options.getUser('user') || interaction.user;
+
+    if (targetUser.bot) {
+      return await replyUserError(interaction, {
+        type: ErrorTypes.VALIDATION,
+        message: 'Boty nie biorą udziału w systemie poziomów i nie posiadają rangi.',
+      });
+    }
+
     const member = await interaction.guild.members
       .fetch(targetUser.id)
       .catch(() => null);
@@ -51,7 +61,7 @@ export default {
     const safeUserData = {
       level: userData?.level ?? 0,
       xp: userData?.xp ?? 0,
-      totalXp: userData?.totalXp ?? 0
+      totalXp: userData?.totalXp ?? 0,
     };
 
     const xpNeeded = getXpForLevel(safeUserData.level + 1);
@@ -65,29 +75,29 @@ export default {
         {
           name: 'Poziom',
           value: safeUserData.level.toString(),
-          inline: true
+          inline: true,
         },
         {
           name: 'XP',
-          value: `${safeUserData.xp}/${xpNeeded}`,
-          inline: true
+          value: `${safeUserData.xp} / ${xpNeeded}`,
+          inline: true,
         },
         {
           name: 'Całkowite XP',
           value: safeUserData.totalXp.toString(),
-          inline: true
+          inline: true,
         },
         {
           name: `Postęp do poziomu ${safeUserData.level + 1}`,
-          value: `${progressBar} ${progress}%`
+          value: `${progressBar} **${progress}%**`,
         }
       )
-      .setColor('#2ecc71')
+      .setColor(getColor('success'))
       .setTimestamp();
 
     await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     logger.debug(`Sprawdzono rangę użytkownika ${targetUser.id} na serwerze ${interaction.guildId}`);
-  }
+  },
 };
 
 function createProgressBar(percentage, length = 10) {
