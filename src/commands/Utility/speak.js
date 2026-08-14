@@ -30,14 +30,12 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            // Generowanie linku audio Google TTS
             const url = googleTTS.getAudioUrl(text, {
                 lang: 'pl',
                 slow: false,
                 host: 'https://translate.google.com',
             });
 
-            // Wykorzystanie managera Riffy / Lavalink wgranego w bota
             const player = client.riffy.createConnection({
                 guildId: interaction.guild.id,
                 voiceChannel: channel.id,
@@ -51,7 +49,7 @@ export default {
             await interaction.editReply({ content: `Weszłam na kanał i powiedziałam: "${text}"` });
         } catch (error) {
             console.error('Błąd TTS Riffy:', error);
-            await interaction.editReply({ content: 'Wystąpił błąd podczas próby odtworzenia mowy przez Lavalink.' });
+            await interaction.editReply({ content: 'Wystąpił błąd podczas próby odtworzenia mowy.' });
         }
     },
 };
