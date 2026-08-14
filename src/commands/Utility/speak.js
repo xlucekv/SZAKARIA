@@ -14,7 +14,7 @@ export default {
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect),
     
-    category: 'Utility', // <-- TA LINIJKA JEST BARDZO WAŻNA!
+    category: 'Utility',
 
     async execute(interaction) {
         const channel = interaction.member.voice.channel;
@@ -31,14 +31,12 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            // Generowanie linku audio z Google TTS dla języka polskiego
             const url = googleTTS.getAudioUrl(text, {
                 lang: 'pl',
                 slow: false,
                 host: 'https://translate.google.com',
             });
 
-            // Dołączenie do kanału głosowego użytkownika
             const connection = joinVoiceChannel({
                 channelId: channel.id,
                 guildId: interaction.guild.id,
@@ -51,12 +49,10 @@ export default {
             connection.subscribe(player);
             player.play(resource);
 
-            // Gdy bot skończy mówić, automatycznie opuszcza kanał
             player.on(AudioPlayerStatus.Idle, () => {
                 connection.destroy();
             });
 
-            // Obsługa błędów odtwarzacza
             player.on('error', error => {
                 console.error('Błąd odtwarzacza audio:', error);
                 connection.destroy();
