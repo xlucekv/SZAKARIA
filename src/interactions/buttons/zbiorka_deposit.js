@@ -5,7 +5,7 @@ export default {
     name: 'zbiorka_deposit',
     async execute(interaction, client) {
         const modal = new ModalBuilder()
-            .setCustomId(`modal_deposit_${interaction.message.id}`)
+            .setCustomId('modal_deposit')
             .setTitle('Zgłoś wpłatę do zbiórki');
 
         const amountInput = new TextInputBuilder()
