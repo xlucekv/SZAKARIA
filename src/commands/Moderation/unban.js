@@ -8,16 +8,16 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("unban")
-        .setDescription("Unban a user from the server")
+        .setDescription("Cofnij bana użytkownikowi na serwerze")
         .addStringOption(option =>
             option
-                .setName("target")
-                .setDescription("The ID (or mention) of the user to unban")
+                .setName("uzytkownik")
+                .setDescription("ID lub wzmianka użytkownika do odbanowania")
                 .setRequired(true),
         )
         .addStringOption(option =>
-            option.setName("reason")
-                .setDescription("Reason for the unban")
+            option.setName("powod")
+                .setDescription("Powód cofnięcia bana")
                 .setRequired(false),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
@@ -34,13 +34,13 @@ export default {
             return;
         }
 
-        const rawTarget = interaction.options.getString("target");
+        const rawTarget = interaction.options.getString("uzytkownik");
         const targetId = rawTarget.replace(/[<@!>]/g, '').trim();
 
         if (!/^\d{17,20}$/.test(targetId)) {
             return replyUserError(interaction, {
                 type: ErrorTypes.USER_INPUT,
-                message: 'Please provide a valid user ID or mention.',
+                message: 'Podaj prawidłowe ID użytkownika lub wzmiankę.',
             });
         }
 
@@ -48,11 +48,11 @@ export default {
         if (!targetUser) {
             return replyUserError(interaction, {
                 type: ErrorTypes.USER_INPUT,
-                message: `Could not find a user with the ID \`${targetId}\`.`,
+                message: `Nie znaleziono użytkownika o ID \`${targetId}\`.`,
             });
         }
 
-        const reason = interaction.options.getString("reason") || "No reason provided";
+        const reason = interaction.options.getString("powod") || "Brak podanego powodu";
 
         const result = await ModerationService.unbanUser({
             guild: interaction.guild,
@@ -61,11 +61,15 @@ export default {
             reason,
         });
 
+        const description = `> \`👤\` | **Użytkownik:** ${targetUser.tag} (\`${targetUser.id}\`)\n` +
+                            `> \`📝\` | **Powód:** ${reason}\n` +
+                            `> \`🆔\` | **Sprawa:** #${result.caseId}`;
+
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
-                    "✅ User Unbanned",
-                    `Successfully unbanned **${targetUser.tag}** from the server.\n\n**Reason:** ${reason}\n**Case ID:** #${result.caseId}`,
+                    "Ban Cofnięty",
+                    description,
                 ),
             ],
         });
