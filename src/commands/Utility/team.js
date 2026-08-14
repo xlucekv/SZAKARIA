@@ -35,11 +35,10 @@ export default {
         const team1List = team1.map(m => `> • \`🔹\` | **${m.displayName}**`).join('\n');
         const team2List = team2.map(m => `> • \`🔸\` | **${m.displayName}**`).join('\n');
 
-        const teamOutput = `> \`⚔️\` | **Losowanie składów zakończone!**\n\n` +
+        const teamOutput = `## \`⚔️\` | **Losowanie składów zakończone!**\n\n` +
                            `> **Drużyna A:**\n${team1List}\n\n` +
                            `> **Drużyna B:**\n${team2List}\n\n` +
-                           `> ━━━━━━━━━━━━━━━━━━━━\n` +
-                           `> \`👤\` | **Dyspozytor:** ${interaction.user.tag} (\`${interaction.user.id}\`)`;
+                           `> \`👤\` | **Autor:** ${interaction.user.tag} (\`${interaction.user.id}\`)`;
 
         await interaction.reply({ content: teamOutput });
     },
