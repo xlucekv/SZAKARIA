@@ -3,6 +3,7 @@ import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { getLeaderboard, getLevelingConfig, getXpForLevel } from '../../services/leveling/leveling.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+import { getColor } from '../../config/botConfig.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -12,6 +13,7 @@ export default {
   category: 'Leveling',
 
   async execute(interaction, config, client) {
+    // Odraczamy odpowiedź (defer)
     await InteractionHelper.safeDefer(interaction);
 
     const levelingConfig = await getLevelingConfig(client, interaction.guildId);
@@ -20,17 +22,16 @@ export default {
       await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setColor('#f1c40f')
+            .setColor(getColor('warning'))
             .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
-        ],
-        flags: MessageFlags.Ephemeral
+        ]
       });
       return;
     }
 
     const leaderboard = await getLeaderboard(client, interaction.guildId, 10);
 
-    if (leaderboard.length === 0) {
+    if (!leaderboard || leaderboard.length === 0) {
       throw new TitanBotError(
         'Nie znaleziono danych rankingu',
         ErrorTypes.DATABASE,
@@ -38,36 +39,36 @@ export default {
       );
     }
 
-    const embed = new EmbedBuilder()
-      .setTitle('Ranking Poziomów')
-      .setColor('#2ecc71')
-      .setDescription('Top 10 najbardziej aktywnych członków na tym serwerze:')
-      .setTimestamp();
+    // Masowe pobranie członków w JEDNYM zapytaniu API (optymalizacja)
+    const userIds = leaderboard.map((u) => u.userId);
+    const fetchedMembers = await interaction.guild.members
+      .fetch({ user: userIds })
+      .catch(() => new Map());
 
-    const leaderboardText = await Promise.all(
-      leaderboard.map(async (user, index) => {
-        try {
-          const member = await interaction.guild.members.fetch(user.userId).catch(() => null);
-          const userMention = member?.user.toString() || `<@${user.userId}>`;
-          const xpForNextLevel = getXpForLevel(user.level + 1);
+    const leaderboardRows = leaderboard.map((user, index) => {
+      const member = fetchedMembers.get(user.userId);
+      const userMention = member?.user ? `${member.user}` : `<@${user.userId}>`;
+      const xpForNextLevel = getXpForLevel(user.level + 1);
 
-          let rankPrefix = `${index + 1}.`;
-          if (index === 0) rankPrefix = '🥇';
-          else if (index === 1) rankPrefix = '🥈';
-          else if (index === 2) rankPrefix = '🥉';
-          else rankPrefix = `**${index + 1}.**`;
+      let rankPrefix;
+      if (index === 0) rankPrefix = '🥇';
+      else if (index === 1) rankPrefix = '🥈';
+      else if (index === 2) rankPrefix = '🥉';
+      else rankPrefix = `**${index + 1}.**`;
 
-          return `${rankPrefix} ${userMention} — Poziom ${user.level} (${user.xp}/${xpForNextLevel} XP)`;
-        } catch {
-          return `**${index + 1}.** Błąd wczytywania użytkownika ${user.userId}`;
-        }
-      })
-    );
-
-    embed.addFields({
-      name: 'Klasyfikacja',
-      value: leaderboardText.join('\n')
+      return `${rankPrefix} ${userMention} — Poziom **${user.level}** (${user.xp}/${xpForNextLevel} XP)`;
     });
+
+    const embed = new EmbedBuilder()
+      .setTitle('🏆 Ranking Poziomów')
+      .setColor(getColor('success'))
+      .setDescription(`Top **${leaderboard.length}** najbardziej aktywnych członków na serwerze:`)
+      .addFields({
+        name: 'Klasyfikacja',
+        value: leaderboardRows.join('\n')
+      })
+      .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
+      .setTimestamp();
 
     await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     logger.debug(`Wyświetlono ranking dla serwera ${interaction.guildId}`);
