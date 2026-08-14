@@ -25,7 +25,7 @@ export async function execute(interaction, client, args) {
         color: 0x8e44ad,
         description: 
           `> Witaj ${user} w podaniu do klanu **SZAK**. Odpowiedz na poniższe pytania:\n\n` +
-          `• | Podaj swój **nick** z gry Minecraft.\n` +
+          `• | ℹ️ Podaj swój **nick** z gry Minecraft.\n` +
           `• | Ile masz **lat** (wiek)?\n` +
           `• | Jakie posiadasz **itemy**?\n` +
           `• | Wyślij **zdjęcie** scoreboarda oraz swoich itemów.\n` +
