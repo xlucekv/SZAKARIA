@@ -1,14 +1,19 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { saveCollection } from '../../services/collectionService.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('zbiorka')
-        .setDescription('Stwórz nową zbiórkę klanową dla rangi Szak')
+        .setDescription('Stwórz nową zbiórkę klanową dla wybranej roli')
         .addStringOption(option =>
             option.setName('tytul')
                 .setDescription('Nazwa zbiórki (np. Smocze Odłamki)')
+                .setRequired(true)
+        )
+        .addRoleOption(option =>
+            option.setName('rola')
+                .setDescription('Rola klanowa, dla której robimy zbiórkę (np. Szak)')
                 .setRequired(true)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
@@ -19,22 +24,15 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         const title = interaction.options.getString('tytul');
+        const targetRole = interaction.options.getRole('rola');
         const guild = interaction.guild;
 
-        const szakRole = guild.roles.cache.find(role => role.name.toLowerCase() === 'szak');
-
-        if (!szakRole) {
-            return await interaction.editReply({
-                content: 'Nie znaleziono na serwerze roli o nazwie **Szak**.'
-            });
-        }
-
         await guild.members.fetch();
-        const membersWithRole = guild.members.cache.filter(member => member.roles.cache.has(szakRole.id) && !member.user.bot);
+        const membersWithRole = guild.members.cache.filter(member => member.roles.cache.has(targetRole.id) && !member.user.bot);
 
         if (membersWithRole.size === 0) {
             return await interaction.editReply({
-                content: 'Brak użytkowników z rangą **Szak** na serwerze.'
+                content: `Brak użytkowników z rangą **${targetRole.name}** na serwerze (lub bot nie ma włączonej intencji Server Members w Discord Developer Portal).`
             });
         }
 
@@ -47,7 +45,7 @@ export default {
 
         const embed = successEmbed(
             `📦 Zbiórka — ${title}`,
-            `**Lista członków klanu:**\n\n${listText}\n\n**Suma:** 0 ${title}`
+            `**Lista członków (${targetRole.name}):**\n\n${listText}\n\n**Suma:** 0 ${title}`
         );
 
         const row = new ActionRowBuilder().addComponents(
@@ -66,12 +64,12 @@ export default {
         await saveCollection(message.id, {
             title,
             deposits,
-            roleId: szakRole.id,
+            roleId: targetRole.id,
             channelId: interaction.channelId
         });
 
         await interaction.editReply({
-            content: 'Pomyślnie utworzono panel zbiórki!'
+            content: `Pomyślnie utworzono panel zbiórki dla roli **${targetRole.name}**!`
         });
     }
 };
