@@ -9,7 +9,7 @@ export const botConfig = {
     activities: [
       {
         name: "SZAK",
-        state: "stalking",
+        state: "SZAK",
         type: 4, // 4 = Custom Status
       },
     ],
