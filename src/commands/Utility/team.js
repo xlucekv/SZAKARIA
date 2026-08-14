@@ -41,5 +41,17 @@ export default {
                            `> \`👤\` | **Autor:** ${interaction.user.tag} (\`${interaction.user.id}\`)`;
 
         await interaction.reply({ content: teamOutput });
+
+        // Automatyczne usunięcie wiadomości po 1 minucie
+        setTimeout(async () => {
+            try {
+                const message = await interaction.fetchReply().catch(() => null);
+                if (message) {
+                    await message.delete().catch(() => {});
+                }
+            } catch (err) {
+                console.error('Błąd podczas usuwania wiadomości z drużynami:', err);
+            }
+        }, 60 * 1000);
     },
 };
