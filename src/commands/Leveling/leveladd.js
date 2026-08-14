@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { logger } from '../../utils/logger.js';
-import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
+import { TitanBotError, ErrorTypes, replyUserError } from '../../utils/errorHandler.js';
 import { checkUserPermissions } from '../../utils/permissionGuard.js';
 import { addLevels, getLevelingConfig } from '../../services/leveling/leveling.js';
 import { createEmbed } from '../../utils/embeds.js';
@@ -9,7 +9,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
   data: new SlashCommandBuilder()
     .setName('leveladd')
-    .setDescription('Dodaj poziomy użytkownikowi')
+    .setDescription('Dodaj poziomy wybranemu użytkownikowi')
     .addUserOption((option) =>
       option
         .setName('user')
@@ -19,9 +19,10 @@ export default {
     .addIntegerOption((option) =>
       option
         .setName('levels')
-        .setDescription('Liczba poziomów do dodania')
+        .setDescription('Liczba poziomów do dodania (1-100)')
         .setRequired(true)
         .setMinValue(1)
+        .setMaxValue(100)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .setDMPermission(false),
@@ -33,25 +34,33 @@ export default {
     const hasPermission = await checkUserPermissions(
       interaction,
       PermissionFlagsBits.ManageGuild,
-      'Potrzebujesz uprawnienia Zarządzanie Serwerem, aby użyć tej komendy.'
+      'Potrzebujesz uprawnienia **Zarządzanie Serwerem**, aby użyć tej komendy.'
     );
     if (!hasPermission) return;
 
     const levelingConfig = await getLevelingConfig(client, interaction.guildId);
     if (!levelingConfig?.enabled) {
-      await InteractionHelper.safeEditReply(interaction, {
+      return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
-          new EmbedBuilder()
-            .setColor('#f1c40f')
-            .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
+          createEmbed({
+            title: 'System Poziomów',
+            description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
+            color: 'warning',
+          }),
         ],
-        flags: MessageFlags.Ephemeral
       });
-      return;
     }
 
     const targetUser = interaction.options.getUser('user');
     const levelsToAdd = interaction.options.getInteger('levels');
+
+    // Walidacja: Blokada dodawania poziomów botom
+    if (targetUser.bot) {
+      return await replyUserError(interaction, {
+        type: ErrorTypes.VALIDATION,
+        message: 'Nie można dodawać poziomów botom.',
+      });
+    }
 
     const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
     if (!member) {
@@ -68,14 +77,16 @@ export default {
       embeds: [
         createEmbed({
           title: 'Dodano poziomy',
-          description: `Pomyślnie dodano ${levelsToAdd} poziomów dla użytkownika ${targetUser.tag}.\n**Nowy poziom:** ${userData.level}`,
-          color: 'success'
-        })
-      ]
+          description:
+            `Pomyślnie dodano **${levelsToAdd}** ${levelsToAdd === 1 ? 'poziom' : 'poziomów'} dla użytkownika ${targetUser}.\n\n` +
+            `**Nowy poziom:** ${userData.level}`,
+          color: 'success',
+        }),
+      ],
     });
 
     logger.info(
-      `[ADMIN] Użytkownik ${interaction.user.tag} dodał ${levelsToAdd} poziomów dla ${targetUser.tag} na serwerze ${interaction.guildId}`
+      `[ADMIN] Użytkownik ${interaction.user.tag} (ID: ${interaction.user.id}) dodał ${levelsToAdd} lvl dla ${targetUser.tag} (ID: ${targetUser.id}) na serwerze ${interaction.guildId}`
     );
-  }
+  },
 };
