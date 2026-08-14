@@ -58,13 +58,17 @@ export default {
 
             await interaction.editReply({ content: `Powiedziałam: "${text}"` });
 
-            // Nasłuchiwanie zakończenia utworu zamiast timera
-            player.once('trackEnd', () => {
-                setTimeout(() => {
-                    const activePlayer = client.riffy.players.get(interaction.guild.id);
-                    if (activePlayer) activePlayer.destroy();
-                }, 2000); // Wyjdzie 2 sekundy po zakończeniu mówienia
-            });
+            // Bezpiecznik: 
+            // Szacujemy czas trwania (długość tekstu * 150ms + 3s bufora na połączenie)
+            // Używamy setTimeout jako głównego wyzwalacza wyjścia
+            const estimatedDuration = (text.length * 150) + 3000 + 2000; 
+
+            setTimeout(() => {
+                const activePlayer = client.riffy.players.get(interaction.guild.id);
+                if (activePlayer) {
+                    activePlayer.destroy();
+                }
+            }, estimatedDuration);
 
         } catch (error) {
             console.error('Błąd TTS:', error);
