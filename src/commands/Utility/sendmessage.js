@@ -4,12 +4,11 @@ export default {
     data: new SlashCommandBuilder()
         .setName('sendmessage')
         .setDescription('Otwiera okno wysyłania jednorazowej wiadomości DM do wszystkich')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Tylko dla administratorów
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     
     category: 'Admin',
 
     async execute(interaction) {
-        // Tworzymy okno modalne (formularz)
         const modal = new ModalBuilder()
             .setCustomId('send_global_dm_modal')
             .setTitle('Wiadomość globalna do wszystkich');
@@ -27,7 +26,6 @@ export default {
         await interaction.showModal(modal);
     },
 
-    // Obsługa przesłanego formularza (należy podpiąć pod Event interactionCreate)
     async handleModal(interaction) {
         if (!interaction.isModalSubmit() || interaction.customId !== 'send_global_dm_modal') return;
 
@@ -35,7 +33,7 @@ export default {
         await interaction.reply({ content: `> \`⏳\` | Rozpoczynam wysyłanie wiadomości do użytkowników...`, ephemeral: true });
 
         const guild = interaction.guild;
-        await guild.members.fetch(); // Pobieramy pełną listę członków
+        await guild.members.fetch();
 
         let successCount = 0;
         let failCount = 0;
@@ -49,7 +47,6 @@ export default {
                 });
                 successCount++;
             } catch (err) {
-                // Użytkownik ma zablokowane PW lub zablokował bota
                 failCount++;
             }
         }
