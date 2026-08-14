@@ -14,6 +14,11 @@ export default {
                 .setRequired(true)
         )
         .addStringOption(option =>
+            option.setName('czas')
+                .setDescription('Czas trwania (np. 1m = 1 minuta, 2h = 2 godziny, 1d = 1 dzień)')
+                .setRequired(true)
+        )
+        .addStringOption(option =>
             option.setName('opcja1')
                 .setDescription('Pierwsza opcja')
                 .setRequired(true)
@@ -63,11 +68,6 @@ export default {
                 .setDescription('Dziesiąta opcja (opcjonalnie)')
                 .setRequired(false)
         )
-        .addStringOption(option =>
-            option.setName('czas')
-                .setDescription('Czas trwania ankiety, np. 2h, 1d (opcjonalnie)')
-                .setRequired(false)
-        )
         .addBooleanOption(option =>
             option.setName('anonimowa')
                 .setDescription('Czy ankieta ma być anonimowa (domyślnie: fałsz)')
@@ -81,7 +81,7 @@ export default {
         if (!deferSuccess) return;
 
         const question = interaction.options.getString('pytanie');
-        const duration = interaction.options.getString('czas');
+        const rawDuration = interaction.options.getString('czas').trim();
         const isAnonymous = interaction.options.getBoolean('anonimowa') || false;
 
         const options = [];
@@ -96,17 +96,40 @@ export default {
             });
         }
 
+        // Tłumaczenie skrótów na pełny format
+        const formatDuration = (input) => {
+            const match = input.match(/^(\d+)([mhd])$/i);
+            if (!match) return input; // Jeśli wpisano coś innego, zwracamy oryginał
+
+            const value = parseInt(match[1], 10);
+            const unit = match[2].toLowerCase();
+
+            if (unit === 'm') {
+                if (value === 1) return '1 minuta';
+                if (value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20)) return `${value} minuty`;
+                return `${value} minut`;
+            }
+            if (unit === 'h') {
+                if (value === 1) return '1 godzina';
+                if (value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20)) return `${value} godziny`;
+                return `${value} godzin`;
+            }
+            if (unit === 'd') {
+                if (value === 1) return '1 dzień';
+                return `${value} dni`;
+            }
+
+            return input;
+        };
+
+        const durationFormatted = formatDuration(rawDuration);
         const optionsFormatted = options.map((option, index) => `> \`${EMOJIS[index]}\` ${option}`).join('\n');
 
         let pollMessage = `## 📊 **Klanowe Głosowanie**\n` +
-                          `> \`💬\` **Pytanie:** ${question}\n`;
-
-        if (duration) {
-            pollMessage += `> \`⏳\` **Czas trwania:** ${duration}\n`;
-        }
-
-        pollMessage += `\n${optionsFormatted}\n\n` +
-                      `> \`👤\` **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}`;
+                          `> \`💬\` **Pytanie:** ${question}\n` +
+                          `> \`⏳\` **Czas trwania:** ${durationFormatted}\n\n` +
+                          `${optionsFormatted}\n\n` +
+                          `> \`👤\` **Autor:** ${interaction.user} ${isAnonymous ? '*(Ankieta anonimowa)*' : ''}`;
 
         const message = await interaction.channel.send({ content: pollMessage });
 
