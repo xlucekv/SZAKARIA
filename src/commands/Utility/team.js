@@ -12,7 +12,7 @@ export default {
 
         if (!channel) {
             return await interaction.reply({
-                content: '> `❌` | **Użytkownik:** ' + interaction.user.tag + '\n> Musisz być na kanale głosowym, aby użyć tej komendy!',
+                content: `> \`❌\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Musisz być na kanale głosowym, aby użyć tej komendy!`,
                 ephemeral: true,
             });
         }
@@ -21,23 +21,26 @@ export default {
         
         if (members.length < 2) {
             return await interaction.reply({
-                content: '> `⚠️` | **Użytkownik:** ' + interaction.user.tag + '\n> Musisz mieć przynajmniej 2 osoby na kanale, aby stworzyć drużyny!',
+                content: `> \`⚠️\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Musisz mieć przynajmniej 2 osoby na kanale, aby stworzyć drużyny!`,
                 ephemeral: true,
             });
         }
 
-        // Mieszanie składu (Fisher-Yates shuffle)
         members.sort(() => Math.random() - 0.5);
 
         const mid = Math.floor(members.length / 2);
         const team1 = members.slice(0, mid);
         const team2 = members.slice(mid);
 
-        const team1List = team1.map(m => `> - ${m.displayName}`).join('\n');
-        const team2List = team2.map(m => `> - ${m.displayName}`).join('\n');
+        const team1List = team1.map(m => `> • \`🔹\` | **${m.displayName}**`).join('\n');
+        const team2List = team2.map(m => `> • \`🔸\` | **${m.displayName}**`).join('\n');
 
-        await interaction.reply({
-            content: `> \`⚔️\` | **Losowanie składów zakończone!**\n\n> **Drużyna A:**\n${team1List}\n\n> **Drużyna B:**\n${team2List}`
-        });
+        const teamOutput = `> \`⚔️\` | **Losowanie składów zakończone!**\n\n` +
+                           `> **Drużyna A:**\n${team1List}\n\n` +
+                           `> **Drużyna B:**\n${team2List}\n\n` +
+                           `> ━━━━━━━━━━━━━━━━━━━━\n` +
+                           `> \`👤\` | **Dyspozytor:** ${interaction.user.tag} (\`${interaction.user.id}\`)`;
+
+        await interaction.reply({ content: teamOutput });
     },
 };
