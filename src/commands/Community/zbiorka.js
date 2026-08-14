@@ -1,6 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-import { logger } from '../../utils/logger.js';
-import { getColor } from '../../config/botConfig.js';
+import { successEmbed } from '../../utils/embeds.js';
 import { saveCollection } from '../../services/collectionService.js';
 
 export default {
@@ -46,11 +45,10 @@ export default {
 
         const listText = membersWithRole.map(member => `❌ ${member}`).join('\n');
 
-        const embed = new EmbedBuilder()
-            .setTitle(`📦 Zbiórka — ${title}`)
-            .setColor(getColor('success'))
-            .setDescription(`**Lista członków klanu:**\n\n${listText}\n\n**Suma:** 0 ${title}`)
-            .setTimestamp();
+        const embed = successEmbed(
+            `📦 Zbiórka — ${title}`,
+            `**Lista członków klanu:**\n\n${listText}\n\n**Suma:** 0 ${title}`
+        );
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -75,7 +73,5 @@ export default {
         await interaction.editReply({
             content: 'Pomyślnie utworzono panel zbiórki!'
         });
-
-        logger.info(`Utworzono zbiórkę "${title}" na serwerze ${guild.id} przez ${interaction.user.tag}`);
     }
 };
