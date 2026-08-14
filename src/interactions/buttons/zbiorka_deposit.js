@@ -2,6 +2,7 @@ import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from
 
 export default {
     id: 'zbiorka_deposit',
+    name: 'zbiorka_deposit',
     async execute(interaction, client) {
         const modal = new ModalBuilder()
             .setCustomId(`modal_deposit_${interaction.message.id}`)
