@@ -13,6 +13,8 @@ export default {
                 .setMaxLength(200),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect),
+    
+    category: 'Utility', // <-- TA LINIJKA JEST BARDZO WAŻNA!
 
     async execute(interaction) {
         const channel = interaction.member.voice.channel;
