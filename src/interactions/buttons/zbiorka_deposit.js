@@ -14,7 +14,9 @@ export default {
             .setPlaceholder('Wpisz liczbę, np. 5')
             .setRequired(true);
 
-        modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
+        const row = new ActionRowBuilder().addComponents(amountInput);
+        modal.addComponents(row);
+
         return await interaction.showModal(modal);
     }
 };
