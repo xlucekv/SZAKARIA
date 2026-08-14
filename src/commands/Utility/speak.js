@@ -1,5 +1,4 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import googleTTS from 'google-tts-api';
 
 export default {
     data: new SlashCommandBuilder()
@@ -30,11 +29,8 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            const url = googleTTS.getAudioUrl(text, {
-                lang: 'pl',
-                slow: false,
-                host: 'https://translate.google.com',
-            });
+            // Bezpośrednie wygenerowanie linku TTS Google bez zewnętrznych paczek
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=pl&client=tw-ob`;
 
             const player = client.riffy.createConnection({
                 guildId: interaction.guild.id,
