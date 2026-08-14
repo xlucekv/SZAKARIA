@@ -1,33 +1,34 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } from 'discord.js';
-import { createEmbed, successEmbed } from '../../utils/embeds.js';
+import { createEmbed } from '../../utils/embeds.js';
 import { getModerationCases } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('cases')
-        .setDescription('View moderation cases and audit logs')
+        .setDescription('Wyświetl historię spraw moderacyjnych i logi')
         .setDefaultMemberPermissions(PermissionFlagsBits.ViewAuditLog)
         .setDMPermission(false)
         .addStringOption(option =>
-            option.setName('filter')
-                .setDescription('Filter cases by type or user')
+            option.setName('filtr')
+                .setDescription('Filtruj sprawy według typu lub użytkownika')
                 .addChoices(
-                    { name: 'All Cases', value: 'all' },
-                    { name: 'Bans', value: 'Member Banned' },
-                    { name: 'Kicks', value: 'Member Kicked' },
-                    { name: 'Timeouts', value: 'Member Timed Out' },
-                    { name: 'Warnings', value: 'User Warned' }
+                    { name: 'Wszystkie sprawy', value: 'all' },
+                    { name: 'Bany', value: 'Member Banned' },
+                    { name: 'Kicki', value: 'Member Kicked' },
+                    { name: 'Wyciszenia', value: 'Member Timed Out' },
+                    { name: 'Ostrzeżenia', value: 'User Warned' }
                 )
         )
         .addUserOption(option =>
-            option.setName('user')
-                .setDescription('Filter cases by specific user')
+            option.setName('uzytkownik')
+                .setDescription('Filtruj sprawy dla konkretnego użytkownika')
         )
         .addIntegerOption(option =>
             option.setName('limit')
-                .setDescription('Number of cases to show (default: 10)')
+                .setDescription('Liczba spraw do pobrania (domyślnie: 10)')
                 .setMinValue(1)
                 .setMaxValue(50)
         ),
@@ -46,8 +47,8 @@ export default {
         }
 
         try {
-            const filterType = interaction.options.getString('filter') || 'all';
-            const targetUser = interaction.options.getUser('user');
+            const filterType = interaction.options.getString('filtr') || 'all';
+            const targetUser = interaction.options.getUser('uzytkownik');
             const limit = interaction.options.getInteger('limit') || 10;
 
             const filters = {
@@ -58,11 +59,14 @@ export default {
 
             const cases = await getModerationCases(interaction.guild.id, filters);
 
-            if (cases.length === 0) {
-                throw new Error(targetUser 
-                    ? `No moderation cases found for ${targetUser.tag}`
-                    : `No ${filterType === 'all' ? '' : filterType} cases found in this server.`
-                );
+            if (!cases || cases.length === 0) {
+                const noCasesMsg = targetUser 
+                    ? `Nie znaleziono żadnych spraw moderacyjnych dla użytkownika **${targetUser.tag}**.`
+                    : `Nie znaleziono żadnych spraw moderacyjnych na tym serwerze.`;
+                
+                return await interaction.editReply({
+                    content: `> \`⚠️\` | ${noCasesMsg}`
+                });
             }
 
             const CASES_PER_PAGE = 5;
@@ -75,23 +79,26 @@ export default {
                 const pageCases = cases.slice(startIndex, endIndex);
 
                 const embed = createEmbed({
-                    title: 'Moderation Cases',
-                    description: `Showing moderation cases for **${interaction.guild.name}**\n\n**Page ${page} of ${totalPages}**`
+                    title: '📋 Sprawy Moderacyjne',
+                    description: `> \`📊\` | Wyświetlanie spraw dla serwera **${interaction.guild.name}**\n> \`📖\` | **Strona ${page} z ${totalPages}**`
                 });
 
                 pageCases.forEach(case_ => {
-                    const date = new Date(case_.createdAt).toLocaleDateString();
-                    const time = new Date(case_.createdAt).toLocaleTimeString();
+                    const date = new Date(case_.createdAt).toLocaleDateString('pl-PL');
+                    const time = new Date(case_.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
                     
                     embed.addFields({
-                        name: `Case #${case_.caseId} - ${case_.action}`,
-                        value: `**Target:** ${case_.target}\n**Moderator:** ${case_.executor}\n**Date:** ${date} at ${time}\n**Reason:** ${case_.reason || 'No reason provided'}`,
+                        name: `Sprawa #${case_.caseId} — ${case_.action}`,
+                        value: `> \`👤\` | **Użytkownik:** ${case_.target}\n` +
+                               `> \`🛡️\` | **Moderator:** ${case_.executor}\n` +
+                               `> \`📅\` | **Data:** ${date} o ${time}\n` +
+                               `> \`📝\` | **Powód:** ${case_.reason || 'Brak podanego powodu'}`,
                         inline: false
                     });
                 });
 
                 embed.setFooter({
-                    text: `Total cases: ${cases.length} | Filter: ${filterType}${targetUser ?` | User: ${targetUser.tag}`: ''}`
+                    text: `Wszystkich spraw: ${cases.length} | Filtr: ${filterType}${targetUser ? ` | Użytkownik: ${targetUser.tag}` : ''}`
                 });
 
                 return embed;
@@ -102,19 +109,19 @@ export default {
                 
                 const prevButton = new ButtonBuilder()
                     .setCustomId('prev_page')
-                    .setLabel('⬅️ Previous')
+                    .setLabel('⬅️ Poprzednia')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === 1);
 
                 const pageInfoButton = new ButtonBuilder()
                     .setCustomId('page_info')
-                    .setLabel(`Page ${page}/${totalPages}`)
+                    .setLabel(`Strona ${page}/${totalPages}`)
                     .setStyle(ButtonStyle.Primary)
                     .setDisabled(true);
 
                 const nextButton = new ButtonBuilder()
                     .setCustomId('next_page')
-                    .setLabel('Next ➡️')
+                    .setLabel('Następna ➡️')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === totalPages);
 
@@ -129,19 +136,19 @@ export default {
 
             const collector = message.createMessageComponentCollector({
                 componentType: ComponentType.Button,
-time: 120000
+                time: 120000
             });
 
             collector.on('collect', async (buttonInteraction) => {
-                await buttonInteraction.deferUpdate();
-
                 if (buttonInteraction.user.id !== interaction.user.id) {
-                    await buttonInteraction.followUp({
-                        content: 'You cannot use these buttons. Run `/cases` to get your own case view.',
+                    await buttonInteraction.reply({
+                        content: '> `❌` | Nie możesz używać tych przycisków. Użyj komendy `/cases`, aby wygenerować własny podgląd.',
                         flags: MessageFlags.Ephemeral
                     });
                     return;
                 }
+
+                await buttonInteraction.deferUpdate();
 
                 const { customId } = buttonInteraction;
 
@@ -166,12 +173,16 @@ time: 120000
                         components: [disabledRow]
                     });
                 } catch (error) {
+                    // Ignoruj błąd, jeśli wiadomość została usunięta
                 }
             });
 
         } catch (error) {
             logger.error('Error in cases command:', error);
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while retrieving moderation cases. Please try again later.' });
+            return await replyUserError(interaction, { 
+                type: ErrorTypes.UNKNOWN, 
+                message: 'Wystąpił błąd podczas pobierania spraw moderacyjnych. Spróbuj ponownie później.' 
+            });
         }
     }
 };
