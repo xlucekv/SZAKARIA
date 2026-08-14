@@ -8,11 +8,11 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("untimeout")
-        .setDescription("Remove timeout from a user")
+        .setDescription("Zdejmij przerwę (timeout) użytkownikowi")
         .addUserOption((option) =>
             option
-                .setName("target")
-                .setDescription("User to untimeout")
+                .setName("uzytkownik")
+                .setDescription("Użytkownik, któremu chcesz zdjąć przerwę")
                 .setRequired(true),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
@@ -29,14 +29,14 @@ export default {
             return;
         }
 
-        const targetUser = interaction.options.getUser("target");
-        const member = interaction.options.getMember("target");
+        const targetUser = interaction.options.getUser("uzytkownik");
+        const member = interaction.options.getMember("uzytkownik");
 
         if (!targetUser) {
             throw new TitanBotError(
                 'Missing target user',
                 ErrorTypes.USER_INPUT,
-                'You must specify a user to untimeout.',
+                'Musisz wskazać użytkownika, któremu chcesz zdjąć przerwę.',
                 { subtype: 'invalid_user' },
             );
         }
@@ -45,7 +45,7 @@ export default {
             throw new TitanBotError(
                 "Target not found",
                 ErrorTypes.USER_INPUT,
-                "The target user is not currently in this server.",
+                "Wskazany użytkownik nie znajduje się obecnie na tym serwerze.",
             );
         }
 
@@ -55,10 +55,14 @@ export default {
             moderator: interaction.member,
         });
 
+        const description = `> \`🔓\` | **Zdjęto przerwę użytkownikowi:** ${targetUser.tag} (\`${targetUser.id}\`)\n` +
+                            `> \`💬\` | **Informacja:** Użytkownik może ponownie pisać i dołączać do kanałów głosowych.`;
+
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
-                    `🔓 **Removed timeout** from ${targetUser.tag}`,
+                    "Przerwa Zdjęta",
+                    description,
                 ),
             ],
         });
