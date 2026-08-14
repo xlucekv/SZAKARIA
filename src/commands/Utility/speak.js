@@ -25,7 +25,6 @@ export default {
         }
 
         const text = interaction.options.getString('tekst');
-
         await interaction.deferReply({ ephemeral: true });
 
         try {
@@ -42,9 +41,7 @@ export default {
                 });
             }
 
-            if (!player.connected) {
-                player.connect();
-            }
+            if (!player.connected) player.connect();
 
             const resolve = await client.riffy.resolve({
                 query: ttsUrl,
@@ -52,34 +49,26 @@ export default {
             });
 
             if (!resolve || !resolve.tracks || resolve.tracks.length === 0) {
-                return await interaction.editReply({ content: 'Nie udało się wygenerować strumienia audio dla tego tekstu.' });
+                return await interaction.editReply({ content: 'Nie udało się wygenerować strumienia audio.' });
             }
 
             const track = resolve.tracks[0];
             player.queue.add(track);
+            player.play();
 
-            if (!player.playing && !player.paused) {
-                player.play();
-            }
+            await interaction.editReply({ content: `Powiedziałam: "${text}"` });
 
-            await interaction.editReply({ content: `Weszłam na kanał i powiedziałam: "${text}"` });
-
-            // Zabezpieczenie: Odczytanie dokładnego czasu audio (z Lavalink) 
-            // Jeśli Lavalink odczyta czas jako 0 (stream), szacujemy czas z długości tekstu (~150ms na znak)
-            const trackDuration = track.info.length > 0 ? track.info.length : text.length * 150; 
-            
-            // Ustawienie timera: Czas trwania nagrania + 2000 milisekund (2 sekundy)
-            setTimeout(() => {
-                const currentPlayer = client.riffy.players.get(interaction.guild.id);
-                // Niszczymy odtwarzacz (bot opuszcza kanał)
-                if (currentPlayer) {
-                    currentPlayer.destroy();
-                }
-            }, trackDuration + 2000);
+            // Nasłuchiwanie zakończenia utworu zamiast timera
+            player.once('trackEnd', () => {
+                setTimeout(() => {
+                    const activePlayer = client.riffy.players.get(interaction.guild.id);
+                    if (activePlayer) activePlayer.destroy();
+                }, 2000); // Wyjdzie 2 sekundy po zakończeniu mówienia
+            });
 
         } catch (error) {
-            console.error('Błąd TTS Riffy:', error);
-            await interaction.editReply({ content: 'Wystąpił błąd podczas próby odtworzenia mowy.' });
+            console.error('Błąd TTS:', error);
+            await interaction.editReply({ content: 'Wystąpił błąd podczas odtwarzania.' });
         }
     },
 };
