@@ -3,59 +3,61 @@ import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '
 import { logger } from '../../utils/logger.js';
 import { getColor } from '../../config/bot.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 const EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 const MAX_OPTIONS = 10;
+
 export default {
     data: new SlashCommandBuilder()
         .setName('poll')
-        .setDescription('Create a simple poll with up to 10 options')
+        .setDescription('Utwórz prostą ankietę z maksymalnie 10 opcjami')
         .addStringOption(option =>
-            option.setName('question')
-                .setDescription('The poll question')
+            option.setName('pytanie')
+                .setDescription('Pytanie w ankiecie')
                 .setRequired(true))
         .addStringOption(option =>
-            option.setName('option1')
-                .setDescription('First option')
+            option.setName('opcja1')
+                .setDescription('Pierwsza opcja')
                 .setRequired(true))
         .addStringOption(option =>
-            option.setName('option2')
-                .setDescription('Second option')
+            option.setName('opcja2')
+                .setDescription('Druga opcja')
                 .setRequired(true))
         .addStringOption(option =>
-            option.setName('option3')
-                .setDescription('Third option (optional)')
+            option.setName('opcja3')
+                .setDescription('Trzecia opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option4')
-                .setDescription('Fourth option (optional)')
+            option.setName('opcja4')
+                .setDescription('Czwarta opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option5')
-                .setDescription('Fifth option (optional)')
+            option.setName('opcja5')
+                .setDescription('Piąta opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option6')
-                .setDescription('Sixth option (optional)')
+            option.setName('opcja6')
+                .setDescription('Szósta opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option7')
-                .setDescription('Seventh option (optional)')
+            option.setName('opcja7')
+                .setDescription('Siódmą opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option8')
-                .setDescription('Eighth option (optional)')
+            option.setName('opcja8')
+                .setDescription('Ósma opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option9')
-                .setDescription('Ninth option (optional)')
+            option.setName('opcja9')
+                .setDescription('Dziewiąta opcja (opcjonalnie)')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('option10')
-                .setDescription('Tenth option (optional)')
+            option.setName('opcja10')
+                .setDescription('Dziesiąta opcja (opcjonalnie)')
                 .setRequired(false))
         .addBooleanOption(option =>
-            option.setName('anonymous')
-                .setDescription('Make the poll anonymous (default: false)')
+            option.setName('anonimowa')
+                .setDescription('Czy ankieta ma być anonimowa (domyślnie: fałsz)')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -69,17 +71,17 @@ export default {
             return;
         }
 
-        const question = interaction.options.getString('question');
-        const isAnonymous = interaction.options.getBoolean('anonymous') || false;
+        const question = interaction.options.getString('pytanie');
+        const isAnonymous = interaction.options.getBoolean('anonimowa') || false;
 
         const options = [];
         for (let i = 1; i <= MAX_OPTIONS; i++) {
-            const option = interaction.options.getString(`option${i}`);
+            const option = interaction.options.getString(`opcja${i}`);
             if (option) options.push(option);
         }
 
         if (options.length < 2) {
-            throw new Error("You must provide at least 2 options for the poll.");
+            throw new Error("Musisz podać co najmniej 2 opcje do ankiety.");
         }
 
         let description = `**${question}**\n\n`;
@@ -88,13 +90,13 @@ export default {
         });
 
         if (isAnonymous) {
-            description += '\n*This is an anonymous poll. Votes are not tracked to users.*';
+            description += '\n*To jest ankieta anonimowa. Głosy nie są przypisywane do użytkowników.*';
         } else {
-            description += '\n*React with the emoji to vote!*';
+            description += '\n*Zareaguj odpowiednią emotikoną, aby zagłosować!*';
         }
 
         const embed = successEmbed(
-            `📊 ${isAnonymous ? 'Anonymous ' : ''}Poll`,
+            `📊 ${isAnonymous ? 'Anonimowa ' : ''}Ankieta`,
             description
         );
 
@@ -106,7 +108,7 @@ export default {
         }
 
         await InteractionHelper.safeEditReply(interaction, {
-            content: '✅ Poll created successfully!',
+            content: '✅ Ankieta została pomyślnie utworzona!',
         });
     },
 };
