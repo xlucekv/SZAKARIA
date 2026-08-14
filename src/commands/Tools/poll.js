@@ -15,7 +15,7 @@ export default {
         )
         .addStringOption(option =>
             option.setName('czas')
-                .setDescription('Czas trwania (np. 1m = 1 minuta, 2h = 2 godziny, 1d = 1 dzień)')
+                .setDescription('Czas trwania (np. 1m = 1 minuta, 2h = 2 godziny, 1d = 1 dzień - min. 1m)')
                 .setRequired(true)
         )
         .addStringOption(option =>
@@ -96,7 +96,29 @@ export default {
             });
         }
 
-        const formatDuration = (input) => {
+        // Parsowanie czasu i walidacja minimum 1 minuty
+        const parseDurationToMs = (input) => {
+            const match = input.match(/^(\d+)([mhd])$/i);
+            if (!match) return null;
+
+            const value = parseInt(match[1], 10);
+            const unit = match[2].toLowerCase();
+
+            if (unit === 'm') return value * 60 * 1000;
+            if (unit === 'h') return value * 60 * 60 * 1000;
+            if (unit === 'd') return value * 24 * 60 * 60 * 1000;
+
+            return null;
+        };
+
+        const durationMs = parseDurationToMs(rawDuration);
+        if (!durationMs || durationMs < 60 * 1000) {
+            return await InteractionHelper.safeEditReply(interaction, {
+                content: '❌ Minimalny czas trwania ankiety to **1 minuta** (użyj formatu np. `1m`, `2h`, `1d`).'
+            });
+        }
+
+        const formatDurationText = (input) => {
             const match = input.match(/^(\d+)([mhd])$/i);
             if (!match) return input;
 
@@ -121,7 +143,7 @@ export default {
             return input;
         };
 
-        const durationFormatted = formatDuration(rawDuration);
+        const durationFormatted = formatDurationText(rawDuration);
         const optionsFormatted = options.map((option, index) => `> \`${EMOJIS[index]}\` ${option}`).join('\n');
 
         let pollMessage = `## 📊 **Klanowe Głosowanie**\n` +
@@ -140,5 +162,20 @@ export default {
         await InteractionHelper.safeEditReply(interaction, {
             content: '✅ Ankieta została pomyślnie utworzona!'
         });
+
+        // Automatyczne zamykanie ankiety po upływie czasu
+        setTimeout(async () => {
+            try {
+                const fetchedMsg = await message.channel.messages.fetch(message.id).catch(() => null);
+                if (!fetchedMsg) return;
+
+                // Usuwamy możliwość głosowania (usuwamy reakcje bota lub blokujemy edycją)
+                let closedContent = fetchedMsg.content + `\n\n> \`❌\` **Ankieta została zakończona!**`;
+                await fetchedMsg.edit({ content: closedContent });
+                await fetchedMsg.reactions.removeAll().catch(() => {});
+            } catch (err) {
+                console.error('Błąd podczas automatycznego kończenia ankiety:', err);
+            }
+        }, durationMs);
     },
 };
