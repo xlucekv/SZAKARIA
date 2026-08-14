@@ -96,7 +96,6 @@ export default {
             });
         }
 
-        // Parsowanie czasu i walidacja minimum 1 minuty
         const parseDurationToMs = (input) => {
             const match = input.match(/^(\d+)([mhd])$/i);
             if (!match) return null;
@@ -163,18 +162,61 @@ export default {
             content: '✅ Ankieta została pomyślnie utworzona!'
         });
 
-        // Automatyczne zamykanie ankiety po upływie czasu
+        // Harmonogram zakończenia ankiety
         setTimeout(async () => {
             try {
                 const fetchedMsg = await message.channel.messages.fetch(message.id).catch(() => null);
                 if (!fetchedMsg) return;
 
-                // Usuwamy możliwość głosowania (usuwamy reakcje bota lub blokujemy edycją)
-                let closedContent = fetchedMsg.content + `\n\n> \`❌\` **Ankieta została zakończona!**`;
+                // Pobieramy wyniki (liczba głosów dla każdej opcji, pomijając reakcję bota jeśli policzono by ją dodatkowo, ale .count - 1 jest standardem)
+                let resultsText = '';
+                let maxVotes = -1;
+                let winningOptionIndex = -1;
+
+                options.forEach((option, index) => {
+                    const reaction = fetchedMsg.reactions.cache.get(EMOJIS[index]);
+                    // Odejmujemy 1, ponieważ bot sam dodał tę reakcję na start, chyba że użytkownicy też klikali
+                    const votes = reaction ? Math.max(0, reaction.count - 1) : 0;
+                    
+                    resultsText += `> \`${EMOJIS[index]}\` ${option} — **${votes}** głosów\n`;
+
+                    if (votes > maxVotes) {
+                        maxVotes = votes;
+                        winningOptionIndex = index;
+                    }
+                });
+
+                let closedContent = `## 📊 **Klanowe Głosowanie (Zakończone)**\n` +
+                                    `> \`💬\` **Pytanie:** ${question}\n` +
+                                    `> \`🏁\` **Status:** Zakończone\n\n` +
+                                    `### Wyniki:\n${resultsText}\n`;
+
+                if (maxVotes > 0 && winningOptionIndex !== -1) {
+                    closedContent += `> \`🏆\` **Zwycięzca:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${maxVotes} głosów)\n\n`;
+                } else {
+                    closedContent += `> \`❌\` **Brak oddanych głosów w ankiecie.**\n\n`;
+                }
+
+                closedContent += `> \`ℹ️\` *Ta wiadomość zostanie automatycznie usunięta za 24 godziny.*`;
+
+                // Edytujemy wiadomość na podsumowanie
                 await fetchedMsg.edit({ content: closedContent });
                 await fetchedMsg.reactions.removeAll().catch(() => {});
+
+                // Harmonogram usunięcia wiadomości po 24 godzinach od zakończenia
+                setTimeout(async () => {
+                    try {
+                        const finalMsg = await message.channel.messages.fetch(message.id).catch(() => null);
+                        if (finalMsg) {
+                            await finalMsg.delete().catch(() => {});
+                        }
+                    } catch (err) {
+                        console.error('Błąd podczas usuwania zakończonej ankiety:', err);
+                    }
+                }, 24 * 60 * 60 * 1000);
+
             } catch (err) {
-                console.error('Błąd podczas automatycznego kończenia ankiety:', err);
+                console.error('Błąd podczas kończenia ankiety:', err);
             }
         }, durationMs);
     },
