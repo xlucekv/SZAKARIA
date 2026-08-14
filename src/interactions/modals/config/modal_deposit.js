@@ -3,6 +3,7 @@ import { getCollection, updateDeposit } from '../../../services/collectionServic
 
 export default {
     id: 'modal_deposit',
+    name: 'modal_deposit',
     async execute(interaction, client) {
         await interaction.deferReply({ ephemeral: true });
 
