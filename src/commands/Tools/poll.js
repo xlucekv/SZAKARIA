@@ -182,7 +182,7 @@ export default {
                     const reaction = fetchedMsg.reactions.cache.get(EMOJIS[index]);
                     const votes = reaction ? Math.max(0, reaction.count - 1) : 0;
                     
-                    resultsText += `> \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**\n`;
+                    resultsText = resultsText ? `${resultsText}\n> \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**` : `> \`${EMOJIS[index]}\` ${option} — **${getVotesWord(votes)}**`;
 
                     if (votes > maxVotes) {
                         maxVotes = votes;
@@ -193,10 +193,10 @@ export default {
                 let closedContent = `## 📊 **Wyniki Głosowania**\n` +
                                     `> \`💬\` **Pytanie:** ${question}\n` +
                                     `> \`🏁\` **Status:** Zakończone\n\n` +
-                                    `### Wyniki:\n${resultsText}\n`;
+                                    `> \`📈\` **Wyniki:**\n${resultsText}\n\n`;
 
                 if (maxVotes > 0 && winningOptionIndex !== -1) {
-                    closedContent += `> \`🏆\` **Najpopularniejsza opcja:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${getVotesWord(maxVotes)})\n`;
+                    closedContent += `> \`🏆\` **Wygrana opcja:** \`${EMOJIS[winningOptionIndex]}\` ${options[winningOptionIndex]} (${getVotesWord(maxVotes)})\n`;
                 } else {
                     closedContent += `> \`❌\` **Brak oddanych głosów w ankiecie.**\n`;
                 }
