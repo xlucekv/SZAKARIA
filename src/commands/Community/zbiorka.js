@@ -13,7 +13,7 @@ export default {
         )
         .addRoleOption(option =>
             option.setName('rola')
-                .setDescription('Rola klanowa, dla której robimy zbiórkę (np. Szak)')
+                .setDescription('Rola klanowa, dla której robimy zbiórkę')
                 .setRequired(true)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
@@ -32,7 +32,7 @@ export default {
 
         if (membersWithRole.size === 0) {
             return await interaction.editReply({
-                content: `Brak użytkowników z rangą **${targetRole.name}** na serwerze (lub bot nie ma włączonej intencji Server Members w Discord Developer Portal).`
+                content: `Brak użytkowników z rangą **${targetRole.name}** na serwerze.`
             });
         }
 
@@ -41,11 +41,12 @@ export default {
             deposits[member.id] = 0;
         });
 
+        // Wszędzie zaczynamy od krzyżyków
         const listText = membersWithRole.map(member => `❌ ${member}`).join('\n');
 
         const embed = successEmbed(
             `📦 Zbiórka — ${title}`,
-            `**Lista członków (${targetRole.name}):**\n\n${listText}\n\n**Suma:** 0 ${title}`
+            `**Lista członków (${targetRole.name}):**\n\n${listText}\n\n**Suma:**\n\`\`\`ansi\n\u001b[1;32m0\u001b[0m ${title}\n\`\`\``
         );
 
         const row = new ActionRowBuilder().addComponents(
