@@ -10,40 +10,41 @@ import { handleDelete } from './modules/serverstats_delete.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("serverstats")
-        .setDescription("Manage server statistics that track member counts and channel data")
+        .setDescription("Zarządzaj statystykami serwera śledzącymi liczbę członków i kanałów")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
         .addSubcommand(subcommand =>
             subcommand
                 .setName("create")
-                .setDescription("Create a new statistics tracker channel in a category")
+                .setDescription("Utwórz nowy kanał ze statystykami w wybranej kategorii")
                 .addStringOption(option =>
                     option
-                        .setName("type")
-                        .setDescription("The type of statistics to track")
+                        .setName("typ")
+                        .setDescription("Typ statystyk do śledzenia")
                         .setRequired(true)
                         .addChoices(
-                            { name: "members + bots", value: "members" },
-                            { name: "members only", value: "members_only" },
-                            { name: "bots only", value: "bots" }
+                            { name: "użytkownicy + boty", value: "members" },
+                            { name: "tylko użytkownicy", value: "members_only" },
+                            { name: "tylko boty", value: "bots" }
                         )
                 )
                 .addStringOption(option =>
                     option
-                        .setName("channel_type")
-                        .setDescription("The channel type to create for this tracker")
+                        .setName("typ_kanalu")
+                        .setDescription("Typ kanału utworzonego dla tego licznika")
                         .setRequired(true)
                         .addChoices(
-                            { name: "voice channel (recommended)", value: "voice" },
-                            { name: "text channel", value: "text" }
+                            { name: "kanał głosowy (zalecany)", value: "voice" },
+                            { name: "kanał tekstowy", value: "text" }
                         )
                 )
                 .addChannelOption(option =>
                     option
-                        .setName("category")
-                        .setDescription("The category where the statistics tracker channel will be created")
+                        .setName("kategoria")
+                        .setDescription("Kategoria, w której zostanie utworzony kanał ze statystykami")
                         .setRequired(true)
                         .addChannelTypes(ChannelType.GuildCategory)
                 )
@@ -51,38 +52,38 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName("list")
-                .setDescription("List all statistics trackers for this server")
+                .setDescription("Wyświetl listę wszystkich liczników statystyk na tym serwerze")
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("update")
-                .setDescription("Update an existing statistics tracker")
+                .setDescription("Zaktualizuj istniejący licznik statystyk")
                 .addStringOption(option =>
                     option
-                        .setName("counter-id")
-                        .setDescription("The ID of the tracker to update")
+                        .setName("id_licznika")
+                        .setDescription("ID licznika do zaktualizowania")
                         .setRequired(true)
                 )
                 .addStringOption(option =>
                     option
-                        .setName("type")
-                        .setDescription("The new tracker type")
+                        .setName("typ")
+                        .setDescription("Nowy typ licznika")
                         .setRequired(false)
                         .addChoices(
-                            { name: "members + bots", value: "members" },
-                            { name: "members only", value: "members_only" },
-                            { name: "bots only", value: "bots" }
+                            { name: "użytkownicy + boty", value: "members" },
+                            { name: "tylko użytkownicy", value: "members_only" },
+                            { name: "tylko boty", value: "bots" }
                         )
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("delete")
-                .setDescription("Delete an existing statistics tracker")
+                .setDescription("Usuń istniejący licznik statystyk")
                 .addStringOption(option =>
                     option
-                        .setName("counter-id")
-                        .setDescription("The ID of the tracker to delete")
+                        .setName("id_licznika")
+                        .setDescription("ID licznika do usunięcia")
                         .setRequired(true)
                 )
         ),
@@ -104,7 +105,7 @@ export default {
                 await handleDelete(interaction, client);
                 break;
             default:
-                await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Unknown subcommand.' });
+                await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Nieznana podkomenda.' });
         }
     }
 };
