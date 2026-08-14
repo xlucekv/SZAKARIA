@@ -84,19 +84,22 @@ export default {
             throw new Error("Musisz podać co najmniej 2 opcje do ankiety.");
         }
 
-        let description = `**${question}**\n\n`;
-        options.forEach((option, index) => {
-            description += `${EMOJIS[index]} ${option}\n`;
-        });
+        // Budowanie opisu w stylu SZAK (bloki cytatu z pionowymi kreskami)
+        const optionsFormatted = options.map((option, index) => `> • \`${EMOJIS[index]}\` ┃ **${option}**`).join('\n');
+
+        let description = `> \`📊\` | **Klanowe Głosowanie**\n\n` +
+                          `> • \`💬\` | **Pytanie:** *${question}*\n\n` +
+                          `${optionsFormatted}\n\n` +
+                          `> ━━━━━━━━━━━━━━━━━━━━\n`;
 
         if (isAnonymous) {
-            description += '\n*To jest ankieta anonimowa. Głosy nie są przypisywane do użytkowników.*';
+            description += `> \`🔒\` | *To jest ankieta anonimowa. Głosy nie są przypisywane do użytkowników.*\n`;
         } else {
-            description += '\n*Zareaguj odpowiednią emotikoną, aby zagłosować!*';
+            description += `> \`👉\` | *Zareaguj odpowiednią emotikoną, aby zagłosować!*`;
         }
 
         const embed = successEmbed(
-            `📊 ${isAnonymous ? 'Anonimowa ' : ''}Ankieta`,
+            `📋 ┃ Ankieta SZAK`,
             description
         );
 
