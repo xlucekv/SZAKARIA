@@ -22,12 +22,12 @@ export default {
         const reportChannelId = resolveLogChannel(guildConfig, 'reports');
 
         if (!reportChannelId) {
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'The report channel has not been set up. Ask a moderator to use `/logging dashboard` or `/logging channel`.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Kanał do zgłoszeń nie został skonfigurowany. Poproś moderatora o użycie `/logging dashboard` lub `/logging channel`.' });
         }
 
         const ownerMention = interaction.guild.ownerId
-            ? `<@${interaction.guild.ownerId}> New report!`
-            : 'New report!';
+            ? `<@${interaction.guild.ownerId}> Nowe zgłoszenie!`
+            : 'Nowe zgłoszenie!';
 
         await logEvent({
             client,
@@ -35,13 +35,13 @@ export default {
             eventType: EVENT_TYPES.REPORT_FILE,
             content: ownerMention,
             data: {
-                title: 'User Report',
+                title: 'Zgłoszenie Użytkownika',
                 lines: [
-                    formatLogLine('Reported User', `${targetUser.tag} (\`${targetUser.id}\`)`),
-                    formatLogLine('Reported By', `${interaction.user.tag} (\`${interaction.user.id}\`)`),
-                    formatLogLine('Channel', interaction.channel.toString()),
+                    formatLogLine('Zgłoszony użytkownik', `${targetUser.tag} (\`${targetUser.id}\`)`),
+                    formatLogLine('Zgłaszający', `${interaction.user.tag} (\`${interaction.user.id}\`)`),
+                    formatLogLine('Kanał', interaction.channel.toString()),
                 ],
-                blockFields: [{ name: 'Reason', value: reason }],
+                blockFields: [{ name: 'Powód', value: reason }],
                 author: await resolveUserAuthor(client, targetUser.id),
                 thumbnail: targetUser.displayAvatarURL(),
             },
@@ -49,8 +49,8 @@ export default {
 
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [createEmbed({
-                title: 'Report Submitted',
-                description: `Your report against **${targetUser.tag}** has been successfully filed and sent to the moderation team. Thank you!`,
+                title: 'Zgłoszenie wysłane',
+                description: `Twoje zgłoszenie dotyczące użytkownika **${targetUser.tag}** zostało pomyślnie wysłane do zespołu moderacji. Dziękujemy!`,
             })],
         });
 
