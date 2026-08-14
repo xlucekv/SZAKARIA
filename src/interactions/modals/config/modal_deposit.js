@@ -1,5 +1,5 @@
-import { successEmbed } from '../../utils/embeds.js';
-import { getCollection, updateDeposit } from '../../services/collectionService.js';
+import { successEmbed } from '../../../utils/embeds.js';
+import { getCollection, updateDeposit } from '../../../services/collectionService.js';
 
 export default {
     id: 'modal_deposit',
