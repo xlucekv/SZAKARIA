@@ -1,5 +1,4 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } from '@discordjs/voice';
 import googleTTS from 'google-tts-api';
 
 export default {
@@ -16,7 +15,7 @@ export default {
     
     category: 'Utility',
 
-    async execute(interaction) {
+    async execute(interaction, _config, client) {
         const channel = interaction.member.voice.channel;
 
         if (!channel) {
@@ -31,37 +30,28 @@ export default {
         await interaction.deferReply({ ephemeral: true });
 
         try {
+            // Generowanie linku audio Google TTS
             const url = googleTTS.getAudioUrl(text, {
                 lang: 'pl',
                 slow: false,
                 host: 'https://translate.google.com',
             });
 
-            const connection = joinVoiceChannel({
-                channelId: channel.id,
+            // Wykorzystanie managera Riffy / Lavalink wgranego w bota
+            const player = client.riffy.createConnection({
                 guildId: interaction.guild.id,
-                adapterCreator: interaction.guild.voiceAdapterCreator,
+                voiceChannel: channel.id,
+                textChannel: interaction.channel.id,
+                deaf: true,
             });
 
-            const player = createAudioPlayer();
-            const resource = createAudioResource(url);
-
-            connection.subscribe(player);
-            player.play(resource);
-
-            player.on(AudioPlayerStatus.Idle, () => {
-                connection.destroy();
-            });
-
-            player.on('error', error => {
-                console.error('Błąd odtwarzacza audio:', error);
-                connection.destroy();
-            });
+            player.connect();
+            player.play({ track: url });
 
             await interaction.editReply({ content: `Weszłam na kanał i powiedziałam: "${text}"` });
         } catch (error) {
-            console.error('Błąd TTS / Voice:', error);
-            await interaction.editReply({ content: 'Wystąpił błąd podczas próby wygenerowania lub odtworzenia mowy.' });
+            console.error('Błąd TTS Riffy:', error);
+            await interaction.editReply({ content: 'Wystąpił błąd podczas próby odtworzenia mowy przez Lavalink.' });
         }
     },
 };
