@@ -8,22 +8,22 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('randomuser')
-        .setDescription('Select a random user from the server')
+        .setDescription('Wybierz losowego użytkownika z serwera')
         .addRoleOption(option =>
-            option.setName('role')
-                .setDescription('Limit selection to users with this role')
+            option.setName('rola')
+                .setDescription('Ogranicz wybór do użytkowników z tą rolą')
                 .setRequired(false))
         .addBooleanOption(option =>
-            option.setName('bots')
-                .setDescription('Include bots in the selection (default: false)')
+            option.setName('boty')
+                .setDescription('Uwzględnij boty w wyborze (domyślnie: fałsz)')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('online')
-                .setDescription('Only select from online users (default: false)')
+                .setDescription('Wybieraj tylko spośród użytkowników online (domyślnie: fałsz)')
                 .setRequired(false))
         .addBooleanOption(option =>
-            option.setName('mention')
-                .setDescription('Mention the selected user (default: false)')
+            option.setName('wspomnij')
+                .setDescription('Oznacz/wspomnij wybranego użytkownika (domyślnie: fałsz)')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -40,14 +40,14 @@ export default {
         if (!interaction.guild) {
             return replyUserError(interaction, {
                 type: ErrorTypes.VALIDATION,
-                message: 'This command can only be used in a server/guild.',
+                message: 'Ta komenda może być używana tylko na serwerze.',
             });
         }
 
-        const role = interaction.options.getRole('role');
-        const includeBots = interaction.options.getBoolean('bots') || false;
+        const role = interaction.options.getRole('rola');
+        const includeBots = interaction.options.getBoolean('boty') || false;
         const onlineOnly = interaction.options.getBoolean('online') || false;
-        const shouldMention = interaction.options.getBoolean('mention') || false;
+        const shouldMention = interaction.options.getBoolean('wspomnij') || false;
 
         let members = interaction.guild.members.cache.filter(member => {
             if (member.user.bot && !includeBots) return false;
@@ -66,14 +66,14 @@ export default {
         }
 
         if (memberArray.length === 0) {
-            let errorMessage = 'Could not find any users matching your filters:';
-            if (role) errorMessage = `No users have the **${role.name}** role.`;
-            if (onlineOnly) errorMessage = 'No users are currently online.';
-            if (role && onlineOnly) errorMessage = `No **${role.name}** members are online.`;
+            let errorMessage = 'Nie znaleziono użytkowników spełniających Twoje filtry:';
+            if (role) errorMessage = `Żaden użytkownik nie posiada roli **${role.name}**.`;
+            if (onlineOnly) errorMessage = 'Żaden użytkownik nie jest obecnie online.';
+            if (role && onlineOnly) errorMessage = `Żaden członek z rolą **${role.name}** nie jest online.`;
 
             return replyUserError(interaction, {
                 type: ErrorTypes.USER_INPUT,
-                message: errorMessage + '\n\nTry adjusting your filters.',
+                message: errorMessage + '\n\nSpróbuj dostosować filtry.',
             });
         }
 
@@ -89,14 +89,14 @@ export default {
             .slice(0, 10);
 
         const embed = successEmbed(
-            '🎲 Random User Selected',
+            '🎲 Wybrano losowego użytkownika',
             shouldMention ? `${selectedMember}` : `**${user.username}**`
         )
         .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 256 }))
         .addFields(
-            { name: 'Username', value: user.username, inline: true },
-            { name: 'Bot', value: user.bot ? 'Yes' : 'No', inline: true },
-            { name: `Roles (${roles.length})`, value: roles.length > 0 ? roles.slice(0, 5).join('') + (roles.length > 5 ? `+${roles.length - 5} more` : '') : 'No roles', inline: false }
+            { name: 'Nazwa użytkownika', value: user.username, inline: true },
+            { name: 'Bot', value: user.bot ? 'Tak' : 'Nie', inline: true },
+            { name: `Role (${roles.length})`, value: roles.length > 0 ? roles.slice(0, 5).join('') + (roles.length > 5 ? `+${roles.length - 5} więcej` : '') : 'Brak ról', inline: false }
         )
         .setColor('primary');
 
@@ -104,12 +104,12 @@ export default {
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId(`randomuser_${interaction.user.id}_again`)
-                    .setLabel('🎲 Pick Another User')
+                    .setLabel('🎲 Losuj innego użytkownika')
                     .setStyle(ButtonStyle.Primary)
             );
 
         const response = await interaction.editReply({
-            content: shouldMention ? `${selectedMember}, you've been chosen!` : null,
+            content: shouldMention ? `${selectedMember}, zostałeś/aś wybrany/a!` : null,
             embeds: [embed],
             components: [row],
             allowedMentions: { users: shouldMention ? [user.id] : [] }
@@ -139,7 +139,7 @@ export default {
                 if (newMemberArray.length === 0) {
                     await replyUserError(i, {
                         type: ErrorTypes.USER_INPUT,
-                        message: 'No users found matching the criteria.',
+                        message: 'Nie znaleziono użytkowników spełniających kryteria.',
                     });
                     return;
                 }
@@ -155,19 +155,19 @@ export default {
                     .slice(0, 10);
 
                 const newEmbed = successEmbed(
-                    '🎲 Random User Selected',
+                    '🎲 Wybrano losowego użytkownika',
                     shouldMention ? `${newSelectedMember}` : `**${newUser.username}**`
                 )
                 .setThumbnail(newUser.displayAvatarURL({ dynamic: true, size: 256 }))
                 .addFields(
-                    { name: 'Username', value: newUser.username, inline: true },
-                    { name: 'Bot', value: newUser.bot ? 'Yes' : 'No', inline: true },
-                    { name: `Roles (${newRoles.length})`, value: newRoles.length > 0 ? newRoles.slice(0, 5).join('') + (newRoles.length > 5 ? `+${newRoles.length - 5} more` : '') : 'No roles', inline: false }
+                    { name: 'Nazwa użytkownika', value: newUser.username, inline: true },
+                    { name: 'Bot', value: newUser.bot ? 'Tak' : 'Nie', inline: true },
+                    { name: `Role (${newRoles.length})`, value: newRoles.length > 0 ? newRoles.slice(0, 5).join('') + (newRoles.length > 5 ? `+${newRoles.length - 5} więcej` : '') : 'Brak ról', inline: false }
                 )
                 .setColor(newSelectedMember.displayHexColor || '#3498db');
 
                 await i.update({
-                    content: shouldMention ? `${newSelectedMember}, you've been chosen!` : null,
+                    content: shouldMention ? `${newSelectedMember}, zostałeś/aś wybrany/a!` : null,
                     embeds: [newEmbed],
                     components: [row],
                     allowedMentions: { users: shouldMention ? [newUser.id] : [] }
@@ -176,7 +176,7 @@ export default {
             } catch (error) {
                 logger.error('Button interaction error:', error);
                 await i.reply({
-                    content: 'An error occurred while selecting another user.',
+                    content: 'Wystąpił błąd podczas wybierania kolejnego użytkownika.',
                     flags: ['Ephemeral']
                 });
             }
