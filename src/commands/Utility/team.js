@@ -11,23 +11,8 @@ export default {
                 .setRequired(true)
         )
         .addStringOption(option =>
-            option.setName('dzien')
-                .setDescription('Dzień (np. 15)')
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('miesiac')
-                .setDescription('Miesiąc (np. 08 lub sierpień)')
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('rok')
-                .setDescription('Rok (np. 2026)')
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('godzina')
-                .setDescription('Godzina w formacie HH:MM (np. 20:00)')
+            option.setName('czas')
+                .setDescription('Kiedy start (np. 15.08.2026 o 20:00 lub Dzisiaj o 20:00)')
                 .setRequired(true)
         )
         .addStringOption(option =>
@@ -43,49 +28,23 @@ export default {
         if (!deferSuccess) return;
 
         const title = interaction.options.getString('tytul');
-        const dayStr = interaction.options.getString('dzien');
-        const monthStr = interaction.options.getString('miesiac');
-        const yearStr = interaction.options.getString('rok');
-        const timeStr = interaction.options.getString('godzina');
+        const time = interaction.options.getString('czas');
         const description = interaction.options.getString('opis');
 
-        // Próba obliczenia dokładnego czasu wydarzenia, aby usunąć wiadomość godzinę po nim
-        const parseMonthToNumber = (m) => {
-            const cleaned = m.trim().toLowerCase();
-            const months = {
-                'styczeń': 1, 'styczenia': 1, '1': 1, '01': 1,
-                'luty': 2, 'lutego': 2, '2': 2, '02': 2,
-                'marzec': 3, 'marca': 3, '3': 3, '03': 3,
-                'kwiecień': 4, 'kwietnia': 4, '4': 4, '04': 4,
-                'maj': 5, 'maja': 5, '5': 5, '05': 5,
-                'czerwiec': 6, 'czerwca': 6, '6': 6, '06': 6,
-                'lipiec': 7, 'lipca': 7, '7': 7, '07': 7,
-                'sierpień': 8, 'sierpnia': 8, '8': 8, '08': 8,
-                'wrzesień': 9, 'września': 9, '9': 9, '09': 9,
-                'październik': 10, 'października': 10, '10': 10,
-                'listopad': 11, 'listopada': 11, '11': 11,
-                'grudzień': 12, 'grudnia': 12, '12': 12
-            };
-            return months[cleaned] || parseInt(cleaned, 10);
-        };
+        // Próba automatycznego wykrycia daty i godziny z tekstu, aby usunąć wiadomość godzinę po wydarzeniu
+        const match = time.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}).*?(\d{1,2}):(\d{2})/);
+        if (match) {
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10);
+            const year = parseInt(match[3], 10);
+            const hours = parseInt(match[4], 10);
+            const minutes = parseInt(match[5], 10);
 
-        const day = parseInt(dayStr, 10);
-        const month = parseMonthToNumber(monthStr);
-        const year = parseInt(yearStr, 10);
-        const timeMatch = timeStr.match(/^(\d{1,2}):(\d{2})$/);
-
-        if (!isNaN(day) && !isNaN(month) && !isNaN(year) && timeMatch) {
-            const hours = parseInt(timeMatch[1], 10);
-            const minutes = parseInt(timeMatch[2], 10);
-            
-            // Tworzymy obiekt daty wydarzenia
             const eventDate = new Date(year, month - 1, day, hours, minutes, 0);
-            
-            // Dodajemy 1 godzinę do czasu wydarzenia jako moment usunięcia wiadomości
             const deleteTime = eventDate.getTime() + (60 * 60 * 1000);
             const delay = deleteTime - Date.now();
 
-            if (delay > 0 && delay < 2147483647) { // Limit setTimeout w JS to ok. 24.8 dni
+            if (delay > 0 && delay < 2147483647) {
                 setTimeout(async () => {
                     try {
                         const fetchedMsg = await interaction.channel.messages.fetch(message.id).catch(() => null);
@@ -99,8 +58,6 @@ export default {
             }
         }
 
-        const formattedTermin = `${dayStr}.${monthStr}.${yearStr} o ${timeStr}`;
-
         // Struktury do przechowywania ID użytkowników, którzy kliknęli przyciski
         const goingSet = new Set();
         const notGoingSet = new Set();
@@ -110,7 +67,7 @@ export default {
             let content = `## 📢 **Klanowe Wydarzenie**\n` +
                           `> \`👤\` **Autor:** ${interaction.user} (\`${interaction.user.id}\`)\n` +
                           `> \`🎯\` **Nazwa:** ${title}\n` +
-                          `> \`⏰\` **Termin:** ${formattedTermin}\n`;
+                          `> \`⏰\` **Termin:** ${time}\n`;
 
             if (description) {
                 content += `> \`💬\` **Opis:** ${description}\n`;
