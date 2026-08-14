@@ -8,10 +8,6 @@ export default {
         try {
             await interaction.deferReply({ ephemeral: true });
 
-            // Bezpieczne wyciągnięcie ID wiadomości z customId
-            const parts = interaction.customId.split('_');
-            const messageId = parts[parts.length - 1];
-            
             const rawAmount = interaction.fields.getTextInputValue('deposit_amount');
             const amount = parseInt(rawAmount, 10);
 
@@ -19,16 +15,24 @@ export default {
                 return await interaction.editReply({ content: 'Podaj poprawną, dodatnią liczbę!' });
             }
 
+            // Pobieramy ostatnią aktywną zbiórkę z tego kanału lub bazy powiązaną z użytkownikiem
+            // Pobieramy wiadomość bezpośrednio przez ostatnią interakcję w cache kanału
+            const channelMessages = await interaction.channel.messages.fetch({ limit: 10 });
+            const collectionMessage = channelMessages.find(m => m.embeds.length > 0 && m.embeds[0].title?.startsWith('Zbiórka'));
+
+            if (!collectionMessage) {
+                return await interaction.editReply({ content: 'Nie znaleziono aktywnej wiadomości zbiórki na tym kanale.' });
+            }
+
+            const messageId = collectionMessage.id;
             const collection = await getCollection(messageId);
+            
             if (!collection) {
-                return await interaction.editReply({ content: 'Nie znaleziono aktywnej zbiórki dla tej wiadomości.' });
+                return await interaction.editReply({ content: 'Nie znaleziono danych tej zbiórki w bazie.' });
             }
 
             const userId = interaction.user.id;
             const updatedCollection = await updateDeposit(messageId, userId, amount);
-
-            const channel = await interaction.guild.channels.fetch(collection.channelId);
-            const message = await channel.messages.fetch(messageId);
 
             const guild = interaction.guild;
             let totalSum = 0;
@@ -51,15 +55,15 @@ export default {
                 `**Lista członków:**\n\n${listText}\n\n**Suma:**\n\`\`\`ansi\n\u001b[1;32m${totalSum}\u001b[0m ${collection.title}\n\`\`\``
             );
 
-            await message.edit({ embeds: [updatedEmbed] });
+            await collectionMessage.edit({ embeds: [updatedEmbed] });
 
             await interaction.editReply({
                 content: `Pomyślnie dodano wpłatę: **${amount}**!`
             });
         } catch (error) {
-            console.error('Błąd w modal_deposit:', error);
+            console.error('Krytyczny błąd w modal_deposit:', error);
             if (interaction.deferred || interaction.replied) {
-                await interaction.editReply({ content: 'Wystąpił błąd podczas przetwarzania wpłaty.' });
+                await interaction.editReply({ content: `Wystąpił błąd: ${error.message}` });
             }
         }
     }
