@@ -405,6 +405,25 @@ export default {
             }, interactionTraceContext));
           }
         } else if (interaction.isModalSubmit()) {
+          // Obsługa modala komendy sendmessage
+          if (interaction.customId === 'send_global_dm_modal') {
+            try {
+              const command = client.commands.get('sendmessage');
+              if (command && typeof command.handleModal === 'function') {
+                await command.handleModal(interaction, client);
+              } else {
+                await interaction.reply({ content: 'Błąd: Nie znaleziono obsługi tego formularza.', ephemeral: true });
+              }
+            } catch (error) {
+              await handleInteractionError(interaction, error, withTraceContext({
+                type: 'modal',
+                customId: interaction.customId,
+                handler: 'sendmessage'
+              }, interactionTraceContext));
+            }
+            return;
+          }
+
           if (interaction.customId.startsWith('app_modal_')) {
             try {
               await handleApplicationModal(interaction);
