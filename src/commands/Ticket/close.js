@@ -14,7 +14,7 @@ export default {
         .setDMPermission(false)
         .addStringOption((option) =>
             option
-                .setName("reason")
+                .setName("powod")
                 .setDescription("Powód zamknięcia zgłoszenia.")
                 .setRequired(false),
         ),
@@ -41,7 +41,7 @@ export default {
         }
 
         const reason =
-            interaction.options?.getString("reason") ||
+            interaction.options?.getString("powod") ||
             "Zamknięto przez komendę bez podania powodu.";
 
         await closeTicket(interaction.channel, interaction.user, reason);
