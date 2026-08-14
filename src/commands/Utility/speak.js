@@ -41,7 +41,11 @@ export default {
                 });
             }
 
-            if (!player.connected) player.connect();
+            if (!player.connected) {
+                player.connect();
+                // Krótka pauza tuż po połączeniu, aby upewnić się, że strumień audio nie utnie początku
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
 
             const resolve = await client.riffy.resolve({
                 query: ttsUrl,
@@ -62,14 +66,18 @@ export default {
                 content: `> \`🎙️\` | **Użytkownik:** ${interaction.user.tag} (\`${interaction.user.id}\`)\n> Powiedziałam: "${text}"` 
             });
 
-            const estimatedDuration = (text.length * 150) + 3000 + 4000; 
+            // Pobieramy faktyczny czas trwania audio z Lavalink (w ms). Jeśli go brak, szacujemy dynamicznie.
+            const trackDuration = track.info && track.info.length > 0 ? track.info.length : (text.length * 150) + 1000;
+
+            // Dodajemy tylko 1 sekundę zapasu (1000ms), aby bot wyszedł niemal od razu po wypowiedzeniu całości
+            const exactTimeout = trackDuration + 1000;
 
             setTimeout(() => {
                 const activePlayer = client.riffy.players.get(interaction.guild.id);
                 if (activePlayer) {
                     activePlayer.destroy();
                 }
-            }, estimatedDuration);
+            }, exactTimeout);
 
         } catch (error) {
             console.error('Błąd TTS:', error);
