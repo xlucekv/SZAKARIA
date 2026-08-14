@@ -9,12 +9,12 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("warnings")
-        .setDescription("View all warnings for a user")
+        .setDescription("Wyświetl wszystkie ostrzeżenia użytkownika")
         .addUserOption((o) =>
             o
-                .setName("target")
+                .setName("uzytkownik")
                 .setRequired(true)
-                .setDescription("User to check warnings for"),
+                .setDescription("Użytkownik, którego ostrzeżenia chcesz sprawdzić"),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
@@ -30,35 +30,41 @@ export default {
             return;
         }
 
-        const target = interaction.options.getUser("target");
+        const target = interaction.options.getUser("uzytkownik");
         const guildId = interaction.guildId;
 
         const validWarnings = await WarningService.getWarnings(guildId, target.id);
         const totalWarns = validWarnings.length;
 
         if (totalWarns === 0) {
+            const noWarnsDescription = `> \`👤\` | **Użytkownik:** ${target.tag} (\`${target.id}\`)\n` +
+                                       `> \`✅\` | **Informacja:** Ten użytkownik nie posiada żadnych zarejestrowanych ostrzeżeń.`;
+
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     createEmbed({
-                        title: `Warnings: ${target.tag}`,
-                        description: "This user has no recorded warnings.",
+                        title: "Ostrzeżenia Użytkownika",
+                        description: noWarnsDescription,
                     }).setColor(getColor('success')),
                 ],
             });
             return;
         }
 
+        const description = `> \`👤\` | **Użytkownik:** ${target.tag} (\`${target.id}\`)\n` +
+                            `> \`📊\` | **Łączna liczba ostrzeżeń:** ${totalWarns}`;
+
         const embed = createEmbed({
-            title: `Warnings: ${target.tag}`,
-            description: `Total Warnings: **${totalWarns}**`,
+            title: "Ostrzeżenia Użytkownika",
+            description: description,
         }).setColor(getColor('warning'));
 
         const warningFields = validWarnings
             .map((w, i) => {
                 const discordTimestamp = Math.floor(w.timestamp / 1000);
                 return {
-                    name: `[#${i + 1}] Reason: ${w.reason.substring(0, 100)}`,
-                    value: `**Moderator:** <@${w.moderatorId}>\n**Date:** <t:${discordTimestamp}:F> (<t:${discordTimestamp}:R>)`,
+                    name: `[#${i + 1}] Powód: ${w.reason.substring(0, 100)}`,
+                    value: `**Moderator:** <@${w.moderatorId}>\n**Data:** <t:${discordTimestamp}:F> (<t:${discordTimestamp}:R>)`,
                     inline: false,
                 };
             })
@@ -69,11 +75,11 @@ export default {
         const actionRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`warning_delete_specific:${target.id}:${interaction.user.id}`)
-                .setLabel('Delete Specific Warning')
+                .setLabel('Usuń konkretne ostrzeżenie')
                 .setStyle(ButtonStyle.Danger),
             new ButtonBuilder()
                 .setCustomId(`warning_clear_all:${target.id}:${interaction.user.id}`)
-                .setLabel('Clear All Warnings')
+                .setLabel('Usuń wszystkie ostrzeżenia')
                 .setStyle(ButtonStyle.Danger),
         );
 
