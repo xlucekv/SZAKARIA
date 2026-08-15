@@ -189,7 +189,7 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'Skonfigurowano system poziomów',
+            title: '> `⚙️` | **Skonfigurowano system poziomów**',
             description:
               `System poziomów został pomyślnie **włączony** i jest gotowy do działania.\n\n` +
               `**Kanał powiadomień:** ${channel}\n` +
@@ -257,7 +257,7 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'Zaktualizowano ustawienia poziomów',
+            title: '> `📊` | **Zaktualizowano ustawienia poziomów**',
             description:
               `Pomyślnie zapisano nowe ustawienia:\n\n` +
               `**Kanał powiadomień:** <#${updatedConfig.levelUpChannel}>\n` +
