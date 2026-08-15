@@ -43,7 +43,7 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'System Poziomów',
+            title: '> `⚠️` | **System Poziomów**',
             description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
             color: 'warning',
           }),
@@ -84,7 +84,7 @@ export default {
     await InteractionHelper.safeEditReply(interaction, {
       embeds: [
         createEmbed({
-          title: 'Usunięto poziomy',
+          title: '> `📉` | **Usunięto poziomy**',
           description:
             `Pomyślnie usunięto **${levelsToRemove}** ${levelsToRemove === 1 ? 'poziom' : 'poziomów'} użytkownikowi ${targetUser}.\n\n` +
             `**Nowy poziom:** ${updatedData.level}`,
