@@ -27,7 +27,7 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'System Poziomów',
+            title: '> `⚠️` | **System Poziomów**',
             description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
             color: 'warning',
           }),
@@ -69,7 +69,7 @@ export default {
     const progressBar = createProgressBar(progress, 20);
 
     const embed = new EmbedBuilder()
-      .setTitle(`Ranga użytkownika ${member.displayName}`)
+      .setTitle(`> \`📊\` | **Ranga użytkownika ${member.displayName}**`)
       .setThumbnail(member.displayAvatarURL({ dynamic: true }))
       .addFields(
         {
