@@ -43,7 +43,7 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'System Poziomów',
+            title: '> `⚠️` | **System Poziomów**',
             description: 'System poziomów jest obecnie wyłączony na tym serwerze.',
             color: 'warning',
           }),
@@ -54,7 +54,6 @@ export default {
     const targetUser = interaction.options.getUser('user');
     const levelsToAdd = interaction.options.getInteger('levels');
 
-    // Walidacja: Blokada dodawania poziomów botom
     if (targetUser.bot) {
       return await replyUserError(interaction, {
         type: ErrorTypes.VALIDATION,
@@ -76,7 +75,7 @@ export default {
     await InteractionHelper.safeEditReply(interaction, {
       embeds: [
         createEmbed({
-          title: 'Dodano poziomy',
+          title: '> `📈` | **Dodano poziomy**',
           description:
             `Pomyślnie dodano **${levelsToAdd}** ${levelsToAdd === 1 ? 'poziom' : 'poziomów'} dla użytkownika ${targetUser}.\n\n` +
             `**Nowy poziom:** ${userData.level}`,
