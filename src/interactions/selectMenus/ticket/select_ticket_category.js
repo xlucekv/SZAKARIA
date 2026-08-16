@@ -134,7 +134,7 @@ export async function execute(interaction, client, args) {
 
     await interaction.deferReply({ flags: [64] });
 
-    // Przygotuj tablicę uprawnień kanału uwzględniającą rolę uprawnioną do ticketów (ID: 1259904096689979505)
+    // Uprawnienia: wykluczenie zwykłego gracza z zarządzania, nadanie uprawnień roli perm ticket (1259904096689979505)
     const permissionOverwrites = [
       {
         id: guild.id,
@@ -167,7 +167,8 @@ export async function execute(interaction, client, args) {
           PermissionFlagsBits.AttachFiles,
           PermissionFlagsBits.EmbedLinks,
           PermissionFlagsBits.ReadMessageHistory,
-          PermissionFlagsBits.ManageMessages
+          PermissionFlagsBits.ManageMessages,
+          PermissionFlagsBits.ManageChannels
         ],
       }
     ];
@@ -189,8 +190,16 @@ export async function execute(interaction, client, args) {
       })
       .setTimestamp();
 
+    const closeButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('ticket_close_request')
+        .setLabel('Zamknij zgłoszenie')
+        .setStyle(ButtonStyle.Danger)
+    );
+
     await ticketChannel.send({
-      embeds: [embed]
+      embeds: [embed],
+      components: [closeButton]
     });
 
     await interaction.editReply({
