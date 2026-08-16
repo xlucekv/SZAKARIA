@@ -134,7 +134,7 @@ export async function execute(interaction, client, args) {
 
     await interaction.deferReply({ flags: [64] });
 
-    // Uprawnienia: wykluczenie zwykłego gracza z zarządzania, nadanie uprawnień roli perm ticket (1259904096689979505)
+    // Uprawnienia kanału: użytkownik ma dostęp do pisania, rola perm ticket (1259904096689979505) ma pełny dostęp
     const permissionOverwrites = [
       {
         id: guild.id,
