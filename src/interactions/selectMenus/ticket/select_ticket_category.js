@@ -134,7 +134,7 @@ export async function execute(interaction, client, args) {
 
     await interaction.deferReply({ flags: [64] });
 
-    // Przygotuj tablicę uprawnień kanału z uwzględnieniem konkretnego ID roli uprawnionej
+    // Przygotuj tablicę uprawnień kanału uwzględniającą rolę uprawnioną do ticketów (ID: 1259904096689979505)
     const permissionOverwrites = [
       {
         id: guild.id,
