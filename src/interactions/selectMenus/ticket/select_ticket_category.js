@@ -134,35 +134,49 @@ export async function execute(interaction, client, args) {
 
     await interaction.deferReply({ flags: [64] });
 
+    // Przygotuj tablicę uprawnień kanału z uwzględnieniem konkretnego ID roli uprawnionej
+    const permissionOverwrites = [
+      {
+        id: guild.id,
+        deny: [PermissionFlagsBits.ViewChannel],
+      },
+      {
+        id: user.id,
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.AttachFiles,
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.ReadMessageHistory
+        ],
+      },
+      {
+        id: client.user?.id || interaction.client.user.id,
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ManageChannels,
+          PermissionFlagsBits.ManageMessages
+        ],
+      },
+      {
+        id: '1259904096689979505',
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.AttachFiles,
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.ReadMessageHistory,
+          PermissionFlagsBits.ManageMessages
+        ],
+      }
+    ];
+
     const ticketChannel = await guild.channels.create({
       name: channelName,
       type: ChannelType.GuildText,
       parent: categoryConfig.parentId,
-      permissionOverwrites: [
-        {
-          id: guild.id,
-          deny: [PermissionFlagsBits.ViewChannel],
-        },
-        {
-          id: user.id,
-          allow: [
-            PermissionFlagsBits.ViewChannel,
-            PermissionFlagsBits.SendMessages,
-            PermissionFlagsBits.AttachFiles,
-            PermissionFlagsBits.EmbedLinks,
-            PermissionFlagsBits.ReadMessageHistory
-          ],
-        },
-        {
-          id: client.user?.id || interaction.client.user.id,
-          allow: [
-            PermissionFlagsBits.ViewChannel,
-            PermissionFlagsBits.SendMessages,
-            PermissionFlagsBits.ManageChannels,
-            PermissionFlagsBits.ManageMessages
-          ],
-        }
-      ],
+      permissionOverwrites,
     });
 
     const embed = new EmbedBuilder()
@@ -175,16 +189,8 @@ export async function execute(interaction, client, args) {
       })
       .setTimestamp();
 
-    const closeButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('ticket_close_request:')
-        .setLabel('Zamknij zgłoszenie')
-        .setStyle(ButtonStyle.Danger)
-    );
-
     await ticketChannel.send({
-      embeds: [embed],
-      components: [closeButton]
+      embeds: [embed]
     });
 
     await interaction.editReply({
