@@ -1,189 +1,61 @@
-import { EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
-import { getTicketData, saveTicketData } from '../../../utils/database.js';
+import { MessageFlags } from 'discord.js';
 import { logger } from '../../../utils/logger.js';
-import { getColor } from '../../../config/bot.js';
-import { logTicketFeedback } from '../../../utils/ticket/ticketLogging.js';
-import { InteractionHelper } from '../../../utils/interactionHelper.js';
+import { closeTicket } from '../../../services/ticket.js';
 
-const STAR_LABELS = {
-    '1': '⭐ 1 — Poor',
-    '2': '⭐ 2 — Below Average',
-    '3': '⭐ 3 — Average',
-    '4': '⭐ 4 — Good',
-    '5': '⭐ 5 — Excellent',
+export const data = {
+    customId: 'ticket_close_request',
 };
 
-const feedbackHandler = {
-    name: 'ticket_feedback',
+export async function execute(interaction, client, args) {
+    try {
+        const PERM_TICKET_ROLE_ID = '1259904096689979505';
+        const member = interaction.member;
 
-    async execute(interaction, client, args) {
-        
-        const [guildId, channelId, ratingStr] = args;
+        // Sprawdzamy, czy użytkownik posiada rolę "perm ticket"
+        const hasPermTicketRole = member?.roles?.cache?.has(PERM_TICKET_ROLE_ID);
 
-        if (!guildId || !channelId || !ratingStr) {
-            await InteractionHelper.safeReply(interaction, {
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('⚠️ Invalid Feedback Link')
-                        .setDescription('This feedback link appears to be malformed.')
-                        .setColor(getColor('error')),
-                ],
-                components: [],
+        if (!hasPermTicketRole) {
+            return await interaction.reply({
+                content: '> `❌` | Tylko osoby z rangą **perm ticket** mogą zamykać zgłoszenia.',
+                flags: [MessageFlags.Ephemeral] // Widoczne tylko dla użytkownika, który kliknął
             });
-            return;
         }
 
-        try {
-            await interaction.deferUpdate();
-        } catch (err) {
-            logger.warn('ticketFeedback: interaction expired before deferUpdate', { guildId, channelId, error: err.message });
-            return;
-        }
+        // Jeśli ma uprawnienia, kontynuujemy zamykanie ticketa
+        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
-        let ticketData;
-        try {
-            ticketData = await getTicketData(guildId, channelId);
-        } catch (err) {
-            logger.warn('ticketFeedback: failed to load ticket data', { guildId, channelId, error: err.message });
-        }
+        const reason = "Zamknięto przyciskiem przez uprawnionego użytkownika.";
+        await closeTicket(interaction.channel, interaction.user, reason);
 
-        if (!ticketData) {
-            await InteractionHelper.safeEditReply(interaction, {
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('⚠️ Ticket Not Found')
-                        .setDescription('Could not find the ticket associated with this survey.')
-                        .setColor(getColor('error')),
-                ],
-                components: [],
-            });
-            return;
-        }
-
-        if (interaction.user.id !== ticketData.userId) {
-            await InteractionHelper.safeEditReply(interaction, {
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('❌ Not Allowed')
-                        .setDescription('Only the ticket creator can submit feedback for this ticket.')
-                        .setColor(getColor('error')),
-                ],
-                components: [],
-            });
-            return;
-        }
-
-        if (ticketData.feedback?.rating) {
-            await InteractionHelper.safeEditReply(interaction, {
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('✅ Already Submitted')
-                        .setDescription(`You already rated this ticket **${STAR_LABELS[String(ticketData.feedback.rating)]}**.\nThank you for your feedback!`)
-                        .setColor(getColor('success')),
-                ],
-                components: [],
-            });
-            return;
-        }
-
-        const rating = parseInt(ratingStr, 10);
-        const ratingLabel = STAR_LABELS[String(rating)] ?? `${rating} stars`;
-
-        try {
-            ticketData.feedback = {
-                rating,
-                submittedAt: new Date().toISOString(),
-            };
-            await saveTicketData(guildId, channelId, ticketData);
-        } catch (err) {
-            logger.error('ticketFeedback: failed to save feedback', { guildId, channelId, rating, error: err.message });
-        }
-
-        try {
-            await logTicketFeedback({
-                client: interaction.client,
-                guildId,
-                ticketNumber: ticketData.id,
-                ticketChannelId: channelId,
-                userId: interaction.user.id,
-                rating,
-            });
-        } catch (err) {
-            logger.warn('ticketFeedback: failed to send log', { guildId, channelId, error: err.message });
-        }
-
-        await InteractionHelper.safeEditReply(interaction, {
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('✅ Thanks for your feedback!')
-                    .setDescription(`You rated your support experience **${ratingLabel}**.\n\nYour feedback has been recorded and helps us improve!`)
-                    .setColor(getColor('success'))
-                    .setFooter({ text: 'Thank you for using our support system.' })
-                    .setTimestamp(),
-            ],
-            components: [],
+        await interaction.editReply({
+            content: `> \`🔒\` | Zgłoszenie zostało pomyślnie zamknięte.`
         });
 
-        logger.info('Ticket feedback submitted', {
-            guildId,
-            channelId,
+        logger.info('Ticket closed successfully via button', {
             userId: interaction.user.id,
-            rating,
+            userTag: interaction.user.tag,
+            channelId: interaction.channel.id,
+            channelName: interaction.channel.name,
+            guildId: interaction.guildId
         });
-    },
-};
 
-const commentHandler = {
-    name: 'ticket_feedback_comment',
-
-    async execute(interaction, client, args) {
-        const [guildId, channelId] = args;
-
-        if (!guildId || !channelId) {
-            await interaction.update({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('⚠️ Invalid Feedback Link')
-                        .setDescription('This feedback action appears to be malformed.')
-                        .setColor(getColor('error')),
-                ],
-                components: [],
-            });
-            return;
+    } catch (error) {
+        logger.error('Błąd podczas zamykania ticketu przyciskiem:', error);
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+                content: '> `❌` | Wystąpił błąd podczas zamykania zgłoszenia.',
+                flags: [MessageFlags.Ephemeral]
+            }).catch(() => {});
+        } else {
+            await interaction.editReply({
+                content: '> `❌` | Wystąpił błąd podczas zamykania zgłoszenia.'
+            }).catch(() => {});
         }
+    }
+}
 
-        const modal = new ModalBuilder()
-            .setCustomId(`ticket_feedback_comment_modal:${guildId}:${channelId}`)
-            .setTitle('Add Ticket Feedback');
-
-        const commentInput = new TextInputBuilder()
-            .setCustomId('feedback_comment')
-            .setLabel('Your feedback')
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Share what went well or how we can improve...')
-            .setRequired(true)
-            .setMaxLength(1000);
-
-        modal.addComponents(new ActionRowBuilder().addComponents(commentInput));
-
-        await interaction.showModal(modal);
-    },
+export default {
+    data,
+    customId: 'ticket_close_request',
+    execute
 };
-
-const declineHandler = {
-    name: 'ticket_feedback_decline',
-
-    async execute(interaction) {
-        await interaction.update({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('👋 No problem!')
-                    .setDescription('You can always reach out again if you need further support.')
-                    .setColor(getColor('default')),
-            ],
-            components: [],
-        });
-    },
-};
-
-export default [feedbackHandler, commentHandler, declineHandler];
