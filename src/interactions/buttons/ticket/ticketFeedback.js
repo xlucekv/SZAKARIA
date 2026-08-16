@@ -11,44 +11,45 @@ export async function execute(interaction, client, args) {
         const PERM_TICKET_ROLE_ID = '1259904096689979505';
         const member = interaction.member;
 
-        // Sprawdzamy, czy użytkownik posiada rolę "perm ticket"
+        // 1. Sprawdzamy, czy użytkownik posiada rolę "perm ticket"
         const hasPermTicketRole = member?.roles?.cache?.has(PERM_TICKET_ROLE_ID);
 
         if (!hasPermTicketRole) {
             return await interaction.reply({
-                content: '> `❌` | Tylko osoby z rangą **perm ticket** mogą zamykać zgłoszenia.',
-                flags: [MessageFlags.Ephemeral] // Widoczne tylko dla użytkownika, który kliknął
+                content: '> `❌` | **Brak uprawnień!** Tylko osoby z rangą **perm ticket** mogą zamykać zgłoszenia.',
+                flags: [MessageFlags.Ephemeral]
             });
         }
 
-        // Jeśli ma uprawnienia, kontynuujemy zamykanie ticketa
-        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-
-        const reason = "Zamknięto przyciskiem przez uprawnionego użytkownika.";
-        await closeTicket(interaction.channel, interaction.user, reason);
-
-        await interaction.editReply({
-            content: `> \`🔒\` | Zgłoszenie zostało pomyślnie zamknięte.`
+        // 2. Jeśli ma uprawnienia, wyświetlamy komunikat o zamykaniu (tak jak chciałeś)
+        await interaction.reply({
+            content: 'Zgloszenie zostanie zamkniete za 3 sekundy...'
         });
 
-        logger.info('Ticket closed successfully via button', {
-            userId: interaction.user.id,
-            userTag: interaction.user.tag,
-            channelId: interaction.channel.id,
-            channelName: interaction.channel.name,
-            guildId: interaction.guildId
-        });
+        // 3. Czekamy 3 sekundy i wywołujemy zamknięcie ticketa
+        setTimeout(async () => {
+            try {
+                const reason = "Zamknięto przyciskiem przez uprawnionego użytkownika.";
+                await closeTicket(interaction.channel, interaction.user, reason);
+
+                logger.info('Ticket closed successfully via button after countdown', {
+                    userId: interaction.user.id,
+                    userTag: interaction.user.tag,
+                    channelId: interaction.channel.id,
+                    channelName: interaction.channel.name,
+                    guildId: interaction.guildId
+                });
+            } catch (err) {
+                logger.error('Błąd w timeout podczas zamykania ticketa:', err);
+            }
+        }, 3000);
 
     } catch (error) {
-        logger.error('Błąd podczas zamykania ticketu przyciskiem:', error);
+        logger.error('Błąd podczas obsługi przycisku zamykania ticketu:', error);
         if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({
                 content: '> `❌` | Wystąpił błąd podczas zamykania zgłoszenia.',
                 flags: [MessageFlags.Ephemeral]
-            }).catch(() => {});
-        } else {
-            await interaction.editReply({
-                content: '> `❌` | Wystąpił błąd podczas zamykania zgłoszenia.'
             }).catch(() => {});
         }
     }
