@@ -33,10 +33,15 @@ export default {
             });
         }
 
-        if (!permissionContext.canCloseTicket) {
+        // Sprawdzamy, czy użytkownik posiada rolę "perm ticket" (ID: 1259904096689979505)
+        const PERM_TICKET_ROLE_ID = '1259904096689979505';
+        const member = interaction.member;
+        const hasPermTicketRole = member?.roles?.cache?.has(PERM_TICKET_ROLE_ID);
+
+        if (!hasPermTicketRole) {
             return await replyUserError(interaction, { 
                 type: ErrorTypes.PERMISSION, 
-                message: '> `❌` | Wymagasz uprawnienia `Zarządzanie kanałami`, roli **Administracji** lub bycia autorem zgłoszenia, aby je zamknąć.' 
+                message: '> `❌` | Tylko osoby z rangą **perm ticket** mogą zamykać zgłoszenia.' 
             });
         }
 
