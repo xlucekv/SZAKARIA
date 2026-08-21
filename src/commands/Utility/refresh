@@ -1,5 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
-import { REST, Routes } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, REST, Routes } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -11,17 +10,17 @@ export default {
 
     async execute(interaction, guildConfig, client) {
         await interaction.reply({ 
-            content: `> \`⏳\` | **Odświeżanie komend...**\n> • Trwa ponowna rejestracja w API Discorda.`, 
+            content: `> \`⏳\` | **Odświeżanie komend...**\n> • Trwa ponowna rejestracja komend w API Discorda.`, 
             ephemeral: true 
         });
 
         try {
-            // Pobieramy liczbę załadowanych komend z klienta bota (zależy od Twojego loadera)
+            // Pobieramy komendy załadowane w kliencie bota
             const commandsArray = client.commands ? Array.from(client.commands.values()).map(cmd => cmd.data.toJSON()) : [];
 
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
-            // Rejestracja globalna (lub możesz zmienić na Routes.applicationGuildCommands(client.user.id, interaction.guildId) dla natychmiastowego odświeżenia na serwerze)
+            // Rejestracja globalna komend w Discordzie
             await rest.put(
                 Routes.applicationCommands(client.user.id),
                 { body: commandsArray },
