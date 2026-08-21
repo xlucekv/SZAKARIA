@@ -1,3 +1,4 @@
+/*
 import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -42,7 +43,6 @@ export default {
             if (member.user.bot) continue;
 
             try {
-                // Tydzień/Treść w szarym bloku kodu (idealnie widoczna), bez kresek
                 await member.send({
                     content: `📢 **Wiadomość z serwera ${guild.name}:**\n\n` +
                              `\`\`\`text\n${text}\n\`\`\`\n` +
@@ -55,7 +55,6 @@ export default {
             }
         }
 
-        // Podsumowanie dla administratora
         await interaction.editReply({
             content: `> \`✅\` | **Podsumowanie rozsyłania wiadomości**\n` +
                      `> \n` +
@@ -66,3 +65,4 @@ export default {
         });
     }
 };
+*/
