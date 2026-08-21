@@ -26,7 +26,11 @@ export default {
 
     async handleModal(interaction, client) {
         const text = interaction.fields.getTextInputValue('dm_content');
-        await interaction.reply({ content: '⏳ | Rozpoczynam wysyłanie wiadomości...', ephemeral: true });
+        
+        await interaction.reply({ 
+            content: `> \`⏳\` | **Wysyłanie wiadomości...**\n> • Rozpoczęto rozsyłanie ogłoszenia do użytkowników.`, 
+            ephemeral: true 
+        });
 
         const guild = interaction.guild;
         await guild.members.fetch();
@@ -38,8 +42,12 @@ export default {
             if (member.user.bot) continue;
 
             try {
+                // Tydzień/Treść w szarym bloku kodu (idealnie widoczna), bez kresek
                 await member.send({
-                    content: `📢 **Wiadomość z serwera ${guild.name}:**\n\n${text}`
+                    content: `📢 **Wiadomość z serwera ${guild.name}:**\n\n` +
+                             `\`\`\`text\n${text}\n\`\`\`\n` +
+                             `🌐 Serwer: **${guild.name}**\n` +
+                             `👤 Wysłane przez: **${interaction.user.tag}**`
                 });
                 successCount++;
             } catch (err) {
@@ -47,8 +55,14 @@ export default {
             }
         }
 
+        // Podsumowanie dla administratora
         await interaction.editReply({
-            content: `✅ | **Rozesłano wiadomości!**\n• Dostarczono: **${successCount}**\n• Nie udało się (zamknięte PW): **${failCount}**`
+            content: `> \`✅\` | **Podsumowanie rozsyłania wiadomości**\n` +
+                     `> \n` +
+                     `> • \`📥\` | Dostarczono pomyślnie: **${successCount}**\n` +
+                     `> • \`❌\` | Nie udało się (zamknięte PW): **${failCount}**\n` +
+                     `> \n` +
+                     `> \`👤\` | **Wysyłający:** ${interaction.user} (\`${interaction.user.tag}\`)`
         });
     }
 };
