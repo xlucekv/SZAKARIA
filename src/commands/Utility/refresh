@@ -1,0 +1,44 @@
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { REST, Routes } from 'discord.js';
+
+export default {
+    data: new SlashCommandBuilder()
+        .setName('refresh')
+        .setDescription('Odświeża i rejestruje na nowo wszystkie komendy bota na Discordzie')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    
+    category: 'Utility',
+
+    async execute(interaction, guildConfig, client) {
+        await interaction.reply({ 
+            content: `> \`⏳\` | **Odświeżanie komend...**\n> • Trwa ponowna rejestracja w API Discorda.`, 
+            ephemeral: true 
+        });
+
+        try {
+            // Pobieramy liczbę załadowanych komend z klienta bota (zależy od Twojego loadera)
+            const commandsArray = client.commands ? Array.from(client.commands.values()).map(cmd => cmd.data.toJSON()) : [];
+
+            const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+
+            // Rejestracja globalna (lub możesz zmienić na Routes.applicationGuildCommands(client.user.id, interaction.guildId) dla natychmiastowego odświeżenia na serwerze)
+            await rest.put(
+                Routes.applicationCommands(client.user.id),
+                { body: commandsArray },
+            );
+
+            await interaction.editReply({
+                content: `> \`✅\` | **Pomyślnie odświeżono komendy!**\n` +
+                         `> \n` +
+                         `> • \`🔄\` | Zarejestrowano ponownie: **${commandsArray.length}** komend\n` +
+                         `> • \`👤\` | **Wykonawca:** ${interaction.user} (\`${interaction.user.tag}\`)`
+            });
+
+        } catch (error) {
+            console.error('Błąd podczas odświeżania komend:', error);
+            await interaction.editReply({
+                content: `> \`❌\` | **Wystąpił błąd podczas odświeżania komend!** Sprawdź konsolę bota.`
+            });
+        }
+    }
+};
