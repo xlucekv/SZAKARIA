@@ -9,6 +9,7 @@ import {
 import { logger } from '../../../utils/logger.js';
 
 export const data = {
+  name: 'select_ticket_category',
   customId: 'select_ticket_category',
 };
 
@@ -134,7 +135,6 @@ export async function execute(interaction, client, args) {
 
     await interaction.deferReply({ flags: [64] });
 
-    // Uprawnienia kanału: użytkownik ma dostęp do pisania, rola perm ticket (1259904096689979505) ma pełny dostęp
     const permissionOverwrites = [
       {
         id: guild.id,
@@ -222,7 +222,8 @@ export async function execute(interaction, client, args) {
 }
 
 export default {
-  data,
+  name: 'select_ticket_category',
   customId: 'select_ticket_category',
+  data,
   execute
 };
