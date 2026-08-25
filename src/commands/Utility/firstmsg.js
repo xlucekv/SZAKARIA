@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField, ChannelType } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { createEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { logger } from '../../utils/logger.js';
@@ -37,7 +37,7 @@ export default {
                 guildId: interaction.guildId
             });
             return await InteractionHelper.safeEditReply(interaction, {
-                embeds: [successEmbed('Pierwsza wiadomość', "Nie znaleziono żadnych wiadomości na tym kanale!")],
+                embeds: [successEmbed('Pierwsza wiadomość', "> `ℹ️` | **Brak wiadomości:** Nie znaleziono żadnych wiadomości na tym kanale!")],
             });
         }
 
@@ -47,7 +47,7 @@ export default {
             embeds: [
                 successEmbed(
                     "Pierwsza wiadomość na #" + interaction.channel.name,
-                    `Link do wiadomości: ${messageLink}`
+                    `> \`🔗\` | **Link do wiadomości:** [Kliknij tutaj, aby przejść](${messageLink})`
                 ),
             ],
         });
