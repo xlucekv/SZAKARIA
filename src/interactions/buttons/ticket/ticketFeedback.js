@@ -21,7 +21,7 @@ export async function execute(interaction, client, args) {
             });
         }
 
-        // 2. Jeśli ma uprawnienia, wyświetlamy komunikat o zamykaniu (tak jak chciałeś)
+        // 2. Jeśli ma uprawnienia, wyświetlamy komunikat o zamykaniu
         await interaction.reply({
             content: 'Zgloszenie zostanie zamkniete za 3 sekundy...'
         });
