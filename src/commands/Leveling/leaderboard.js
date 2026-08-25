@@ -23,7 +23,7 @@ export default {
         embeds: [
           new EmbedBuilder()
             .setColor(getColor('warning'))
-            .setDescription('System poziomów jest obecnie wyłączony na tym serwerze.')
+            .setDescription('> `⚠️` | **System poziomów:** Ta funkcja jest obecnie wyłączona na tym serwerze.')
         ]
       });
       return;
@@ -62,7 +62,7 @@ export default {
     const embed = new EmbedBuilder()
       .setTitle('🏆 Ranking Poziomów')
       .setColor(getColor('success'))
-      .setDescription(`Top **${leaderboard.length}** najbardziej aktywnych członków na serwerze:`)
+      .setDescription(`> \`📊\` | Top **${leaderboard.length}** najbardziej aktywnych członków na serwerze:`)
       .addFields({
         name: 'Klasyfikacja',
         value: leaderboardRows.join('\n')
