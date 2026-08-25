@@ -1,7 +1,6 @@
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { createEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 export default {
@@ -22,11 +21,12 @@ export default {
 
         const embed = createEmbed({ 
             title: `Awatar użytkownika ${user.username}`, 
-            description: `[Link do pobrania](${avatarUrl})` 
+            description: `> \`🎨\` | **Pobieranie awataru:** [Kliknij tutaj, aby pobrać](${avatarUrl})` 
         })
             .setImage(avatarUrl);
 
         await InteractionHelper.safeReply(interaction, { embeds: [embed] });
+        
         logger.info(`Avatar command executed`, {
             userId: interaction.user.id,
             targetUserId: user.id,
