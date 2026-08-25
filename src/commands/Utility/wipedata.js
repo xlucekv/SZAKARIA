@@ -2,7 +2,6 @@ import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { createEmbed, errorEmbed, warningEmbed } from '../../utils/embeds.js';
 import { getConfirmationButtons } from '../../utils/components.js';
 import { logger } from '../../utils/logger.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 export default {
@@ -13,7 +12,7 @@ export default {
 
     async execute(interaction, guildConfig, client) {
         const warningMessage = 
-            `⚠️ **TA AKCJA JEST NIEODWRACALNA!** ⚠️\n\n` +
+            `> \`⚠️\` | **TA AKCJA JEST NIEODWRACALNA!**\n\n` +
             `Spowoduje to trwale usunięcie **WSZYSTKICH** Twoich danych z tego serwera, w tym:\n` +
             `• 💰 Stan konta ekonomii (portfel i bank)\n` +
             `• 📊 Poziomy oraz punkty XP\n` +
