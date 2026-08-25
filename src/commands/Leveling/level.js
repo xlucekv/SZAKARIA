@@ -189,9 +189,9 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: '> `⚙️` | **Skonfigurowano system poziomów**',
+            title: 'Skonfigurowano system poziomów',
             description:
-              `System poziomów został pomyślnie **włączony** i jest gotowy do działania.\n\n` +
+              `> \`⚙️\` | **Pomyślnie włączono system poziomów!**\n\n` +
               `**Kanał powiadomień:** ${channel}\n` +
               `**XP za wiadomość:** ${xpMin} – ${xpMax}\n` +
               `**Przerwa (Cooldown):** ${xpCooldown}s\n` +
@@ -257,9 +257,9 @@ export default {
       return await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: '> `📊` | **Zaktualizowano ustawienia poziomów**',
+            title: 'Zaktualizowano ustawienia poziomów',
             description:
-              `Pomyślnie zapisano nowe ustawienia:\n\n` +
+              `> \`📊\` | **Pomyślnie zapisano nowe ustawienia:**\n\n` +
               `**Kanał powiadomień:** <#${updatedConfig.levelUpChannel}>\n` +
               `**XP za wiadomość:** ${updatedConfig.xpRange.min} – ${updatedConfig.xpRange.max}\n` +
               `**Przerwa (Cooldown):** ${updatedConfig.xpCooldown}s\n` +
