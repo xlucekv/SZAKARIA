@@ -73,20 +73,23 @@ export default {
 
         const condition = getWeatherDescription(weatherCode);
 
-        const embed = createEmbed({ title: `Pogoda w: ${cityDisplay}, ${country}`, description: condition.description })
+        const embed = createEmbed({ 
+            title: `🌤️ Pogoda w: ${cityDisplay}, ${country}`, 
+            description: `> \`${condition.emoji}\` | **Stan:** ${condition.description}` 
+        })
             .addFields(
                 {
-                    name: "Temperatura",
+                    name: "🌡️ Temperatura",
                     value: `${temperature}°C`,
                     inline: true,
                 },
                 {
-                    name: "Wilgotność",
+                    name: "💧 Wilgotność",
                     value: `${humidity}%`,
                     inline: true,
                 },
                 {
-                    name: "Prędkość wiatru",
+                    name: "💨 Prędkość wiatru",
                     value: `${windSpeed} km/h`,
                     inline: true,
                 },
@@ -108,17 +111,17 @@ export default {
 
 function getWeatherDescription(code) {
     if (code >= 0 && code <= 3) {
-        return { description: "Czyste niebo / Częściowe zachmurzenie", emoji: "" };
+        return { description: "Czyste niebo / Częściowe zachmurzenie", emoji: "☀️" };
     } else if (code >= 45 && code <= 48) {
-        return { description: "Mgła i mgła osadzająca szadź", emoji: "" };
+        return { description: "Mgła i mgła osadzająca szadź", emoji: "🌫️" };
     } else if (code >= 51 && code <= 67) {
-        return { description: "Mżawka lub deszcz", emoji: "" };
+        return { description: "Mżawka lub deszcz", emoji: "🌧️" };
     } else if (code >= 71 && code <= 75) {
-        return { description: "Opady śniegu", emoji: "" };
+        return { description: "Opady śniegu", emoji: "❄️" };
     } else if (code >= 80 && code <= 86) {
-        return { description: "Porywiste opady (Deszcz/Śnieg)", emoji: "" };
+        return { description: "Porywiste opady (Deszcz/Śnieg)", emoji: "🌦️" };
     } else if (code >= 95 && code <= 99) {
-        return { description: "Burza", emoji: "" };
+        return { description: "Burza z piorunami", emoji: "⚡" };
     }
-    return { description: "Nieznane warunki.", emoji: "" };
+    return { description: "Nieznane warunki.", emoji: "🌡️" };
 }
