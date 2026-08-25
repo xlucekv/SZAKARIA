@@ -3,6 +3,7 @@ import { logger } from '../../../utils/logger.js';
 import { closeTicket } from '../../../services/ticket.js';
 
 export const data = {
+    name: 'ticket_close_request',
     customId: 'ticket_close_request',
 };
 
@@ -56,7 +57,8 @@ export async function execute(interaction, client, args) {
 }
 
 export default {
-    data,
+    name: 'ticket_close_request',
     customId: 'ticket_close_request',
+    data,
     execute
 };
